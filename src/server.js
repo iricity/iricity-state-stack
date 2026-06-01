@@ -43,6 +43,7 @@ function sendHtml(res, statusCode, html) {
 
 function renderLandingPage(registry, filters = {}) {
   const summary = registry.bridgeSummary(filters);
+  const visibleBridges = registry.listBridgeArtifacts(filters);
   const latestBridge = summary.latest_bridge;
   const recordCount = registry.list().length;
   const receiptCount = registry.receipts.length;
@@ -129,6 +130,20 @@ function renderLandingPage(registry, filters = {}) {
         border: 1px solid rgba(148, 179, 214, 0.18);
         background: rgba(255, 255, 255, 0.06);
         color: #f4f7fb;
+      }
+      .bridge-list {
+        display: grid;
+        gap: 12px;
+      }
+      .bridge-list .bridge-item {
+        padding: 14px;
+        border-radius: 16px;
+        border: 1px solid rgba(148, 179, 214, 0.18);
+        background: rgba(255, 255, 255, 0.04);
+      }
+      .bridge-list .bridge-item strong {
+        display: block;
+        margin-bottom: 6px;
       }
       .eyebrow {
         display: inline-block;
@@ -262,6 +277,20 @@ function renderLandingPage(registry, filters = {}) {
             <code>GET /demo/bridges/:bridge_id</code>
             <code>POST /demo/bridge-ingest</code>
           </div>
+        </div>
+      </section>
+      <section class="card">
+        <h3>Filtered bridge list</h3>
+        <p class="muted">These bridge summaries match the current filter state.</p>
+        <div class="bridge-list">
+          ${visibleBridges.length ? visibleBridges.slice(0, 8).map((bridge) => `
+            <div class="bridge-item">
+              <strong><code>${escapeHtml(bridge.bridge_id || 'n/a')}</code></strong>
+              <p><strong>Source:</strong> <code>${escapeHtml(bridge.source_system || 'n/a')}</code></p>
+              <p><strong>Normalized type:</strong> <code>${escapeHtml(bridge.normalized_record_type || 'n/a')}</code></p>
+              <p><strong>Receipt:</strong> <code>${escapeHtml(bridge.receipt_id || 'n/a')}</code></p>
+            </div>
+          `).join('') : `<p class="muted">No bridge summaries match the current filter selection.</p>`}
         </div>
       </section>
       <section class="note">
