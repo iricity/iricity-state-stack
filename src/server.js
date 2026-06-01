@@ -329,6 +329,23 @@ function renderLandingPage(registry, filters = {}) {
           `).join('')}
         </div>
       </section>
+      <section class="card">
+        <h3>Recent bridge feed</h3>
+        <p class="muted">The latest bridge summaries give you a quick scan of what landed most recently in the demo registry.</p>
+        <div class="bridge-list">
+          ${visibleBridges.slice(0, 5).map((bridge, index) => `
+            <div class="bridge-item">
+              <strong>#${escapeHtml(index + 1)} <code>${escapeHtml(bridge.bridge_id || 'n/a')}</code></strong>
+              <div class="pill-row">
+                <code>source:${escapeHtml(bridge.source_system || 'n/a')}</code>
+                <code>event:${escapeHtml(bridge.source_event_id || 'n/a')}</code>
+                <code>type:${escapeHtml(bridge.bridge_type || 'n/a')}</code>
+                <code>status:${escapeHtml(bridge.status || 'n/a')}</code>
+              </div>
+            </div>
+          `).join('')}
+        </div>
+      </section>
       <section class="note">
         <strong>Current contract:</strong>
         <p>

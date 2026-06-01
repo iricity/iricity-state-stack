@@ -24,6 +24,7 @@ test('serves health and schema discovery', async () => {
     assert.match(rootHtml, /Filter bridge summaries/);
     assert.match(rootHtml, /Filtered bridge list/);
     assert.match(rootHtml, /Bridge breakdowns/);
+    assert.match(rootHtml, /Recent bridge feed/);
     assert.match(rootHtml, /GET \/demo\/bridges\/summary/);
 
     const filteredRes = await fetch(`${baseUrl}/demo?source_system=space_stack_demo&bridge_type=state_stack_conversion`);
