@@ -21,7 +21,14 @@ test('serves health and schema discovery', async () => {
     const rootHtml = await rootRes.text();
     assert.match(rootHtml, /State Stack Demo/);
     assert.match(rootHtml, /Bridge summary/);
+    assert.match(rootHtml, /Filter bridge summaries/);
     assert.match(rootHtml, /GET \/demo\/bridges\/summary/);
+
+    const filteredRes = await fetch(`${baseUrl}/demo?source_system=space_stack_demo&bridge_type=state_stack_conversion`);
+    assert.equal(filteredRes.status, 200);
+    const filteredHtml = await filteredRes.text();
+    assert.match(filteredHtml, /source_system:space_stack_demo/);
+    assert.match(filteredHtml, /bridge_type:state_stack_conversion/);
 
     const healthRes = await fetch(`${baseUrl}/health`);
     assert.equal(healthRes.status, 200);

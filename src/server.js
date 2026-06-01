@@ -41,13 +41,15 @@ function sendHtml(res, statusCode, html) {
   res.end(html);
 }
 
-function renderLandingPage(registry) {
-  const summary = registry.bridgeSummary();
+function renderLandingPage(registry, filters = {}) {
+  const summary = registry.bridgeSummary(filters);
   const latestBridge = summary.latest_bridge;
   const recordCount = registry.list().length;
   const receiptCount = registry.receipts.length;
   const conversionCount = registry.conversions.length;
   const bridgeCount = summary.total;
+  const sourceSystem = filters.source_system || '';
+  const bridgeType = filters.bridge_type || '';
   const bridgeId = latestBridge?.bridge_id || 'n/a';
   const bridgeSummaryHtml = latestBridge
     ? `
@@ -109,6 +111,24 @@ function renderLandingPage(registry) {
       }
       .grid.two {
         grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .filter-form {
+        display: grid;
+        gap: 12px;
+      }
+      .filter-form label {
+        display: grid;
+        gap: 6px;
+        font-weight: 700;
+        color: #f4f7fb;
+      }
+      .filter-form input, .filter-form select {
+        width: 100%;
+        padding: 12px 14px;
+        border-radius: 14px;
+        border: 1px solid rgba(148, 179, 214, 0.18);
+        background: rgba(255, 255, 255, 0.06);
+        color: #f4f7fb;
       }
       .eyebrow {
         display: inline-block;
@@ -180,6 +200,37 @@ function renderLandingPage(registry) {
           <code>${escapeHtml(recordCount)} record(s)</code>
           <code>${escapeHtml(receiptCount)} receipt(s)</code>
           <code>${escapeHtml(conversionCount)} conversion(s)</code>
+        </div>
+      </section>
+      <section class="grid two">
+        <div class="card">
+          <h3>Filter bridge summaries</h3>
+          <p class="muted">Narrow the demo by source system or bridge type before inspecting the summary and lookup surfaces.</p>
+          <form class="filter-form" action="/demo" method="GET">
+            <label>
+              Source system
+              <input name="source_system" type="text" value="${escapeHtml(sourceSystem)}" placeholder="space_stack_demo" />
+            </label>
+            <label>
+              Bridge type
+              <select name="bridge_type">
+                <option value=""${bridgeType ? '' : ' selected'}>all bridge types</option>
+                <option value="state_stack_conversion"${bridgeType === 'state_stack_conversion' ? ' selected' : ''}>state_stack_conversion</option>
+              </select>
+            </label>
+            <div class="pill-row">
+              <button class="cta primary" type="submit">Apply filters</button>
+              <a class="cta secondary" href="/demo">Clear filters</a>
+            </div>
+          </form>
+        </div>
+        <div class="card">
+          <h3>Current filter state</h3>
+          <div class="pill-row">
+            <code>source_system:${escapeHtml(sourceSystem || 'all')}</code>
+            <code>bridge_type:${escapeHtml(bridgeType || 'all')}</code>
+          </div>
+          <p class="muted" style="margin-top:12px;">The summary below reflects the current filter selection, while the quick links remain pointed at the full bridge inspection surface.</p>
         </div>
       </section>
       <section class="grid three">
@@ -265,7 +316,10 @@ export function buildStateStackServer({ registry = createDemoRegistry() } = {}) 
 
     try {
       if (method === 'GET' && (path === '/' || path === '/demo')) {
-        return sendHtml(res, 200, renderLandingPage(registry));
+        return sendHtml(res, 200, renderLandingPage(registry, {
+          source_system: url.searchParams.get('source_system') || '',
+          bridge_type: url.searchParams.get('bridge_type') || ''
+        }));
       }
 
       if (method === 'GET' && path === '/health') {
