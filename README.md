@@ -48,3 +48,8 @@ It is not the public SaaS layer and it is not a duplicate of the space stack.
 
 Lock the vocabulary and schema model before any implementation-heavy work.
 
+## Workspace References
+
+- [Workspace deployment posture](/c:/Users/Yoga/Desktop/workspace/vscode_workspace_iricity/DEPLOYMENT_POSTURE.md)
+- [Workspace legal posture](/c:/Users/Yoga/Desktop/workspace/vscode_workspace_iricity/LEGAL_POSTURE.md)
+- [Workspace CI](/c:/Users/Yoga/Desktop/workspace/vscode_workspace_iricity/WORKSPACE_CI.md)
