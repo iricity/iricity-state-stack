@@ -145,6 +145,21 @@ function renderLandingPage(registry, filters = {}) {
         display: block;
         margin-bottom: 6px;
       }
+      .breakdown-grid {
+        display: grid;
+        gap: 14px;
+      }
+      .breakdown-grid.four {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+      }
+      .breakdown-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+      }
+      .breakdown-list code {
+        background: rgba(125, 211, 252, 0.12);
+      }
       .eyebrow {
         display: inline-block;
         margin-bottom: 12px;
@@ -291,6 +306,27 @@ function renderLandingPage(registry, filters = {}) {
               <p><strong>Receipt:</strong> <code>${escapeHtml(bridge.receipt_id || 'n/a')}</code></p>
             </div>
           `).join('') : `<p class="muted">No bridge summaries match the current filter selection.</p>`}
+        </div>
+      </section>
+      <section class="card">
+        <h3>Bridge breakdowns</h3>
+        <p class="muted">This view surfaces the shape of bridge traffic across source systems, bridge types, record types, and statuses.</p>
+        <div class="breakdown-grid four">
+          ${[
+            ['By bridge type', summary.by_bridge_type],
+            ['By source system', summary.by_source_system],
+            ['By record type', summary.by_record_type],
+            ['By status', summary.by_status]
+          ].map(([title, values]) => `
+            <div class="card">
+              <h3>${escapeHtml(title)}</h3>
+              <div class="breakdown-list">
+                ${Object.entries(values || {}).length
+                  ? Object.entries(values).map(([key, count]) => `<code>${escapeHtml(key)}: ${escapeHtml(count)}</code>`).join('')
+                  : `<p class="muted">No matching bridges.</p>`}
+              </div>
+            </div>
+          `).join('')}
         </div>
       </section>
       <section class="note">
