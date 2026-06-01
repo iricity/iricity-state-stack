@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Measurement",
+  "type": "object",
+  "required": ["record_type", "sensor_id", "measurement_type", "timestamp"],
+  "properties": {
+    "record_type": { "const": "measurement" },
+    "sensor_id": { "type": "string" },
+    "measurement_type": { "type": "string" },
+    "value": {},
+    "unit": { "type": "string" },
+    "uncertainty": {},
+    "calibration_id": { "type": "string" },
+    "timestamp": { "type": "string" },
+    "source": { "type": "string" }
+  },
+  "additionalProperties": true
+}
+

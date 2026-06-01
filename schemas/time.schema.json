@@ -1,0 +1,17 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Time",
+  "type": "object",
+  "required": ["record_type", "timestamp"],
+  "properties": {
+    "record_type": { "const": "time" },
+    "timestamp": { "type": "string" },
+    "time_scale": { "type": "string" },
+    "clock_source": { "type": "string" },
+    "clock_uncertainty": { "type": "string" },
+    "sync_method": { "type": "string" },
+    "drift_bound": { "type": "string" }
+  },
+  "additionalProperties": true
+}
+

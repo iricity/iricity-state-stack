@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Entity",
+  "type": "object",
+  "required": ["record_type", "entity_id", "entity_type", "created_at"],
+  "properties": {
+    "record_type": { "const": "entity" },
+    "entity_id": { "type": "string" },
+    "entity_type": { "type": "string" },
+    "controller_id": { "type": "string" },
+    "public_key": { "type": "string" },
+    "status": { "type": "string" },
+    "created_at": { "type": "string" },
+    "metadata_hash": { "type": "string" }
+  },
+  "additionalProperties": true
+}
+

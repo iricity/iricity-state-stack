@@ -1,0 +1,20 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Resource",
+  "type": "object",
+  "required": ["record_type", "resource_type", "quantity", "unit"],
+  "properties": {
+    "record_type": { "const": "resource" },
+    "resource_type": { "type": "string" },
+    "quantity": { "type": "number" },
+    "unit": { "type": "string" },
+    "owner": { "type": "string" },
+    "allocation": { "type": "string" },
+    "usage": { "type": "string" },
+    "quota": { "type": "string" },
+    "cost": { "type": "number" },
+    "settlement_status": { "type": "string" }
+  },
+  "additionalProperties": true
+}
+

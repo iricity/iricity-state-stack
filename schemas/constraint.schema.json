@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Constraint",
+  "type": "object",
+  "required": ["record_type", "constraint_id", "constraint_type"],
+  "properties": {
+    "record_type": { "const": "constraint" },
+    "constraint_id": { "type": "string" },
+    "constraint_type": { "type": "string" },
+    "scope": { "type": "string" },
+    "limit": {},
+    "threshold": {},
+    "allowed_action": { "type": "string" },
+    "forbidden_action": { "type": "string" },
+    "override_policy": { "type": "string" }
+  },
+  "additionalProperties": true
+}
+

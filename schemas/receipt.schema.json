@@ -1,0 +1,18 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Receipt",
+  "type": "object",
+  "required": ["record_type", "receipt_id", "record_hash", "timestamp"],
+  "properties": {
+    "record_type": { "const": "receipt" },
+    "receipt_id": { "type": "string" },
+    "record_hash": { "type": "string" },
+    "previous_hash": { "type": ["string", "null"] },
+    "timestamp": { "type": "string" },
+    "issuer": { "type": "string" },
+    "signature": { "type": "string" },
+    "verification_status": { "type": "string" }
+  },
+  "additionalProperties": true
+}
+

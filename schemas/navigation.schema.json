@@ -1,0 +1,22 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Navigation",
+  "type": "object",
+  "required": ["record_type", "entity_id", "timestamp"],
+  "properties": {
+    "record_type": { "const": "navigation" },
+    "entity_id": { "type": "string" },
+    "reference_frame": { "type": "string" },
+    "latitude": { "type": "number" },
+    "longitude": { "type": "number" },
+    "altitude": { "type": "number" },
+    "velocity": { "type": "number" },
+    "heading": { "type": "number" },
+    "attitude": {},
+    "uncertainty": {},
+    "sensor_source": { "type": "string" },
+    "timestamp": { "type": "string" }
+  },
+  "additionalProperties": true
+}
+

@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Communication",
+  "type": "object",
+  "required": ["record_type", "message_id", "source_node", "destination_node", "timestamp"],
+  "properties": {
+    "record_type": { "const": "communication" },
+    "message_id": { "type": "string" },
+    "source_node": { "type": "string" },
+    "destination_node": { "type": "string" },
+    "payload_hash": { "type": "string" },
+    "route": { "type": "string" },
+    "timestamp": { "type": "string" },
+    "delivery_status": { "type": "string" },
+    "security_profile": { "type": "string" }
+  },
+  "additionalProperties": true
+}
+
