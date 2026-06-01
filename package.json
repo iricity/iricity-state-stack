@@ -11,5 +11,8 @@
     "test": "node --test",
     "start": "node src/server.js",
     "dev": "node --watch src/server.js"
+  },
+  "dependencies": {
+    "@iricity/frontier-shared": "file:../iricity-frontier-shared"
   }
 }

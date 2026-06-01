@@ -1,5 +1,6 @@
 import http from 'node:http';
 import { pathToFileURL } from 'node:url';
+import { CANONICAL_STATE_RECORD_TYPES } from '@iricity/frontier-shared';
 import { InMemoryStateRegistry, schemas, validateRecord } from './index.js';
 
 function readJsonBody(req) {
@@ -56,7 +57,7 @@ export function buildStateStackServer({ registry = createDemoRegistry() } = {}) 
 
       if (method === 'GET' && path === '/schemas') {
         return sendJson(res, 200, {
-          schemas: Object.keys(schemas).sort()
+          schemas: CANONICAL_STATE_RECORD_TYPES
         });
       }
 
