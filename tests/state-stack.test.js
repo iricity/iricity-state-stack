@@ -60,4 +60,11 @@ test('registry ingests bridge artifacts and exposes bridge summaries', () => {
   assert.equal(bridges.length, 1);
   assert.equal(bridges[0].bridge_id, result.bridge.bridge_id);
   assert.equal(bridges[0].source_event_id, 'evt_bridge_1');
+
+  const summary = registry.bridgeSummary();
+  assert.equal(summary.total, 1);
+  assert.equal(summary.by_bridge_type.state_stack_conversion, 1);
+  assert.equal(summary.by_source_system.space_stack_demo, 1);
+  assert.equal(summary.by_record_type.entity, 1);
+  assert.equal(summary.latest_bridge.bridge_id, result.bridge.bridge_id);
 });

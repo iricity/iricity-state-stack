@@ -47,7 +47,7 @@ It is not the public SaaS layer and it is not a duplicate of the space stack.
 ## Immediate Objective
 
 Lock the vocabulary and schema model before any implementation-heavy work.
-Bridge artifacts from applied stacks should now be ingestible through the state stack demo server so normalized records, conversion records, and receipts can be inspected together.
+Bridge artifacts from applied stacks should now be ingestible through the state stack demo server so normalized records, conversion records, and receipts can be inspected together, with summary and filtered lookup support for deeper review.
 
 ## Workspace References
 

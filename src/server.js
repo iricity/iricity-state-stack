@@ -96,11 +96,23 @@ export function buildStateStackServer({ registry = createDemoRegistry() } = {}) 
 
       if (method === 'GET' && path === '/demo/bridges') {
         const subjectId = url.searchParams.get('subject_id') || null;
-        const bridges = subjectId ? registry.bridgeTimeline(subjectId) : registry.listBridgeArtifacts();
+        const sourceSystem = url.searchParams.get('source_system') || null;
+        const bridgeType = url.searchParams.get('bridge_type') || null;
+        const bridges = subjectId
+          ? registry.bridgeTimeline(subjectId, { source_system: sourceSystem, bridge_type: bridgeType })
+          : registry.listBridgeArtifacts({ source_system: sourceSystem, bridge_type: bridgeType });
         return sendJson(res, 200, {
           subject_id: subjectId,
+          source_system: sourceSystem,
+          bridge_type: bridgeType,
           bridges
         });
+      }
+
+      if (method === 'GET' && path === '/demo/bridges/summary') {
+        const sourceSystem = url.searchParams.get('source_system') || null;
+        const bridgeType = url.searchParams.get('bridge_type') || null;
+        return sendJson(res, 200, registry.bridgeSummary({ source_system: sourceSystem, bridge_type: bridgeType }));
       }
 
       if (method === 'GET' && path.startsWith('/demo/bridges/')) {

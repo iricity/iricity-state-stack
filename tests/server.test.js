@@ -90,10 +90,23 @@ test('ingests and queries bridge artifacts', async () => {
     assert.ok(Array.isArray(bridgesBody.bridges));
     assert.ok(bridgesBody.bridges.some((bridge) => bridge.bridge_id === ingestBody.bridge.bridge_id));
 
+    const summaryRes = await fetch(`${baseUrl}/demo/bridges/summary`);
+    assert.equal(summaryRes.status, 200);
+    const summaryBody = await summaryRes.json();
+    assert.equal(summaryBody.total >= 1, true);
+    assert.equal(summaryBody.by_bridge_type.state_stack_conversion >= 1, true);
+
     const bridgeByIdRes = await fetch(`${baseUrl}/demo/bridges/${encodeURIComponent(ingestBody.bridge.bridge_id)}`);
     assert.equal(bridgeByIdRes.status, 200);
     const bridgeByIdBody = await bridgeByIdRes.json();
     assert.equal(bridgeByIdBody.summary.bridge_id, ingestBody.bridge.bridge_id);
     assert.equal(bridgeByIdBody.conversion_record.record_type, 'conversion');
+
+    const filteredRes = await fetch(`${baseUrl}/demo/bridges?source_system=space_stack_demo&bridge_type=state_stack_conversion`);
+    assert.equal(filteredRes.status, 200);
+    const filteredBody = await filteredRes.json();
+    assert.equal(filteredBody.source_system, 'space_stack_demo');
+    assert.equal(filteredBody.bridge_type, 'state_stack_conversion');
+    assert.ok(filteredBody.bridges.every((bridge) => bridge.source_system === 'space_stack_demo'));
   });
 });

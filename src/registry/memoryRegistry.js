@@ -132,8 +132,17 @@ export class InMemoryStateRegistry {
     return [...this.records];
   }
 
-  listBridgeArtifacts() {
-    return this.bridgeArtifacts.map((bridge) => bridge.summary);
+  listBridgeArtifacts(filters = {}) {
+    const sourceSystem = filters.source_system || null;
+    const bridgeType = filters.bridge_type || null;
+    return this.bridgeArtifacts
+      .filter((bridge) => {
+        const summary = bridge.summary || {};
+        if (sourceSystem && summary.source_system !== sourceSystem) return false;
+        if (bridgeType && summary.bridge_type !== bridgeType) return false;
+        return true;
+      })
+      .map((bridge) => bridge.summary);
   }
 
   getBridgeArtifactById(bridgeId) {
@@ -144,14 +153,48 @@ export class InMemoryStateRegistry {
     return this.records.filter((record) => record.subject_id === subjectId || defaultSubjectId(record) === subjectId);
   }
 
-  bridgeTimeline(subjectId) {
+  bridgeTimeline(subjectId, filters = {}) {
+    const sourceSystem = filters.source_system || null;
+    const bridgeType = filters.bridge_type || null;
     return this.bridgeArtifacts
-      .filter(
-        (bridge) =>
-          bridge.summary?.normalized_subject_id === subjectId ||
-          bridge.summary?.source_event_id === subjectId ||
-          bridge.summary?.run_id === subjectId
-      )
+      .filter((bridge) => {
+        const summary = bridge.summary || {};
+        if (sourceSystem && summary.source_system !== sourceSystem) return false;
+        if (bridgeType && summary.bridge_type !== bridgeType) return false;
+        return (
+          summary.normalized_subject_id === subjectId ||
+          summary.source_event_id === subjectId ||
+          summary.run_id === subjectId
+        );
+      })
       .map((bridge) => bridge.summary);
+  }
+
+  bridgeSummary(filters = {}) {
+    const bridges = this.listBridgeArtifacts(filters);
+    const byBridgeType = Object.create(null);
+    const bySourceSystem = Object.create(null);
+    const byRecordType = Object.create(null);
+    const byStatus = Object.create(null);
+
+    for (const bridge of bridges) {
+      byBridgeType[bridge.bridge_type || 'unknown'] = (byBridgeType[bridge.bridge_type || 'unknown'] || 0) + 1;
+      bySourceSystem[bridge.source_system || 'unknown'] = (bySourceSystem[bridge.source_system || 'unknown'] || 0) + 1;
+      byRecordType[bridge.normalized_record_type || 'unknown'] = (byRecordType[bridge.normalized_record_type || 'unknown'] || 0) + 1;
+      byStatus[bridge.status || 'unknown'] = (byStatus[bridge.status || 'unknown'] || 0) + 1;
+    }
+
+    return {
+      total: bridges.length,
+      filters: {
+        source_system: filters.source_system || null,
+        bridge_type: filters.bridge_type || null
+      },
+      by_bridge_type: byBridgeType,
+      by_source_system: bySourceSystem,
+      by_record_type: byRecordType,
+      by_status: byStatus,
+      latest_bridge: bridges[0] || null
+    };
   }
 }

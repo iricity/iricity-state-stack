@@ -33,6 +33,7 @@
 - keep public APIs stable
 - keep proofs and receipts visible
 - add bridge artifact ingest/query support so normalized records, conversion records, and receipts can be reviewed together from the state stack demo surface
+- add bridge summary reporting and filtered lookup support so applied-stack bridge traffic can be reviewed by source system or bridge type
 
 ## Phase 4 - Expand Domain Modules
 
