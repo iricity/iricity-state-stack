@@ -26,6 +26,204 @@ function sendJson(res, statusCode, payload) {
   res.end(JSON.stringify(payload, null, 2));
 }
 
+function escapeHtml(value) {
+  return String(value ?? '')
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function sendHtml(res, statusCode, html) {
+  res.statusCode = statusCode;
+  res.setHeader('content-type', 'text/html; charset=utf-8');
+  res.end(html);
+}
+
+function renderLandingPage(registry) {
+  const summary = registry.bridgeSummary();
+  const latestBridge = summary.latest_bridge;
+  const recordCount = registry.list().length;
+  const receiptCount = registry.receipts.length;
+  const conversionCount = registry.conversions.length;
+  const bridgeCount = summary.total;
+  const bridgeId = latestBridge?.bridge_id || 'n/a';
+  const bridgeSummaryHtml = latestBridge
+    ? `
+      <div class="card">
+        <h3>Bridge summary</h3>
+        <p class="muted">Latest bridge in the demo registry.</p>
+        <div><code>${escapeHtml(latestBridge.bridge_id)}</code></div>
+        <p>Source: <code>${escapeHtml(latestBridge.source_system || 'n/a')}</code></p>
+        <p>Event: <code>${escapeHtml(latestBridge.source_event_id || 'n/a')}</code></p>
+        <p>Normalized type: <code>${escapeHtml(latestBridge.normalized_record_type || 'n/a')}</code></p>
+        <p>Receipt: <code>${escapeHtml(latestBridge.receipt_id || 'n/a')}</code></p>
+      </div>
+    `
+    : `
+      <div class="card">
+        <h3>Bridge summary</h3>
+        <p>No bridge artifacts have been ingested yet.</p>
+      </div>
+    `;
+
+  return `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Iricity State Stack Demo</title>
+    <style>
+      body {
+        margin: 0;
+        font-family: Arial, Helvetica, sans-serif;
+        line-height: 1.6;
+        color: #e8eef7;
+        background: linear-gradient(180deg, #10223d 0%, #07111f 100%);
+      }
+      .wrap {
+        width: min(1100px, calc(100% - 32px));
+        margin: 0 auto;
+        padding: 28px 0 60px;
+      }
+      .hero, .card, .note {
+        border: 1px solid rgba(148, 179, 214, 0.18);
+        border-radius: 22px;
+        background: rgba(9, 18, 35, 0.9);
+        box-shadow: 0 18px 48px rgba(0, 0, 0, 0.24);
+      }
+      .hero {
+        padding: 28px;
+      }
+      .card, .note {
+        padding: 20px;
+        margin-top: 16px;
+      }
+      .grid {
+        display: grid;
+        gap: 16px;
+      }
+      .grid.three {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+      }
+      .grid.two {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      .eyebrow {
+        display: inline-block;
+        margin-bottom: 12px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        color: #93c5fd;
+        border: 1px solid rgba(147, 197, 253, 0.22);
+        background: rgba(147, 197, 253, 0.08);
+        text-transform: uppercase;
+        letter-spacing: 0.12em;
+        font-size: 0.76rem;
+        font-weight: 700;
+      }
+      h1, h2, h3 {
+        margin: 0 0 10px;
+      }
+      h1 {
+        font-size: clamp(2.2rem, 4vw, 3.5rem);
+      }
+      p {
+        color: #b9c7d7;
+      }
+      code {
+        display: inline-block;
+        padding: 0.15rem 0.4rem;
+        border-radius: 999px;
+        background: rgba(255, 255, 255, 0.08);
+        color: #e8eef7;
+      }
+      .kpi {
+        padding: 16px;
+        border-radius: 18px;
+        border: 1px solid rgba(148, 179, 214, 0.18);
+        background: rgba(255, 255, 255, 0.04);
+      }
+      .muted {
+        color: #b9c7d7;
+      }
+      .pill-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin-top: 12px;
+      }
+      .pill-row code {
+        background: rgba(125, 211, 252, 0.12);
+      }
+      a {
+        color: #93c5fd;
+      }
+      @media (max-width: 900px) {
+        .grid.three, .grid.two {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="wrap">
+      <section class="hero">
+        <span class="eyebrow">State Stack Demo</span>
+        <h1>Canonical records, bridge summaries, and replayable provenance.</h1>
+        <p>
+          This local demo surface shows the canonical foundation records plus the bridge summaries that connect applied stacks back into state.
+        </p>
+        <div class="pill-row">
+          <code>${escapeHtml(bridgeCount)} bridge(s)</code>
+          <code>${escapeHtml(recordCount)} record(s)</code>
+          <code>${escapeHtml(receiptCount)} receipt(s)</code>
+          <code>${escapeHtml(conversionCount)} conversion(s)</code>
+        </div>
+      </section>
+      <section class="grid three">
+        <div class="kpi">
+          <strong>Total bridge artifacts</strong>
+          <h2>${escapeHtml(bridgeCount)}</h2>
+          <p class="muted">Ingested bridge artifacts available for summary and filtered review.</p>
+        </div>
+        <div class="kpi">
+          <strong>Canonical records</strong>
+          <h2>${escapeHtml(recordCount)}</h2>
+          <p class="muted">Normalized state records stored by the demo registry.</p>
+        </div>
+        <div class="kpi">
+          <strong>Bridge ID</strong>
+          <h2><code>${escapeHtml(bridgeId)}</code></h2>
+          <p class="muted">Latest bridge summary identity.</p>
+        </div>
+      </section>
+      <section class="grid two">
+        ${bridgeSummaryHtml}
+        <div class="card">
+          <h3>What to inspect</h3>
+          <p>Use the bridge summary endpoint when you want a compact view of source system, bridge type, and record mix.</p>
+          <p>Use the bridge detail endpoint when you want the full normalized record, conversion record, and receipt together.</p>
+          <div class="pill-row">
+            <code>GET /demo/bridges/summary</code>
+            <code>GET /demo/bridges</code>
+            <code>GET /demo/bridges/:bridge_id</code>
+            <code>POST /demo/bridge-ingest</code>
+          </div>
+        </div>
+      </section>
+      <section class="note">
+        <strong>Current contract:</strong>
+        <p>
+          Applied stacks can emit bridge artifacts into this demo server, and the state layer can summarize or inspect them without re-parsing the raw payload each time.
+        </p>
+      </section>
+    </main>
+  </body>
+</html>`;
+}
+
 function createDemoRegistry() {
   const registry = new InMemoryStateRegistry();
   registry.ingest({
@@ -66,6 +264,10 @@ export function buildStateStackServer({ registry = createDemoRegistry() } = {}) 
     const method = req.method || 'GET';
 
     try {
+      if (method === 'GET' && (path === '/' || path === '/demo')) {
+        return sendHtml(res, 200, renderLandingPage(registry));
+      }
+
       if (method === 'GET' && path === '/health') {
         return sendJson(res, 200, {
           ok: true,

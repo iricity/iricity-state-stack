@@ -16,6 +16,13 @@ async function withServer(fn) {
 
 test('serves health and schema discovery', async () => {
   await withServer(async (baseUrl) => {
+    const rootRes = await fetch(baseUrl);
+    assert.equal(rootRes.status, 200);
+    const rootHtml = await rootRes.text();
+    assert.match(rootHtml, /State Stack Demo/);
+    assert.match(rootHtml, /Bridge summary/);
+    assert.match(rootHtml, /GET \/demo\/bridges\/summary/);
+
     const healthRes = await fetch(`${baseUrl}/health`);
     assert.equal(healthRes.status, 200);
     const health = await healthRes.json();
