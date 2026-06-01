@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { canonicalJson, hashRecord, createReceipt, InMemoryStateRegistry } from '../src/index.js';
+import { buildStateBridgeArtifact } from '@iricity/frontier-shared';
 
 test('canonicalJson sorts keys deterministically', () => {
   const a = canonicalJson({ b: 2, a: 1 });
@@ -35,3 +36,28 @@ test('registry ingests and timelines records', () => {
   assert.equal(timeline[0].entity_id, 'NODE-1');
 });
 
+test('registry ingests bridge artifacts and exposes bridge summaries', () => {
+  const registry = new InMemoryStateRegistry();
+  const artifact = buildStateBridgeArtifact({
+    event: {
+      event_id: 'evt_bridge_1',
+      source: 'space_stack_demo',
+      event_type: 'space_observation',
+      timestamp: '2026-01-01T00:00:00Z',
+      payload: { note: 'bridge demo' }
+    },
+    analysis: { analysis_id: 'ana_bridge_1' },
+    receipt: null,
+    run: { run_id: 'run_bridge_1', completed_at: '2026-01-01T00:00:01Z' }
+  });
+
+  const result = registry.ingestBridgeArtifact(artifact);
+  const bridges = registry.listBridgeArtifacts();
+
+  assert.equal(result.bridge.bridge_type, 'state_stack_conversion');
+  assert.equal(result.record.record_type, 'entity');
+  assert.equal(result.conversion_record.record_type, 'conversion');
+  assert.equal(bridges.length, 1);
+  assert.equal(bridges[0].bridge_id, result.bridge.bridge_id);
+  assert.equal(bridges[0].source_event_id, 'evt_bridge_1');
+});

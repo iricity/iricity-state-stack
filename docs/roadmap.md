@@ -32,6 +32,7 @@
 - make `iricity-space-stack` consume the canonical foundation where useful
 - keep public APIs stable
 - keep proofs and receipts visible
+- add bridge artifact ingest/query support so normalized records, conversion records, and receipts can be reviewed together from the state stack demo surface
 
 ## Phase 4 - Expand Domain Modules
 
@@ -40,4 +41,3 @@
 - geo
 - lunar
 - quantum profile
-

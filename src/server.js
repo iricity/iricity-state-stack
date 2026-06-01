@@ -1,6 +1,6 @@
 import http from 'node:http';
 import { pathToFileURL } from 'node:url';
-import { CANONICAL_STATE_RECORD_TYPES } from '@iricity/frontier-shared';
+import { CANONICAL_STATE_RECORD_TYPES, buildStateBridgeArtifact } from '@iricity/frontier-shared';
 import { InMemoryStateRegistry, schemas, validateRecord } from './index.js';
 
 function readJsonBody(req) {
@@ -37,6 +37,25 @@ function createDemoRegistry() {
     created_at: new Date('2026-01-01T00:00:00Z').toISOString(),
     metadata_hash: 'demo'
   });
+  registry.ingestBridgeArtifact(
+    buildStateBridgeArtifact({
+      event: {
+        event_id: 'evt-demo-bridge-001',
+        source: 'space_stack_demo',
+        event_type: 'space_observation',
+        timestamp: new Date('2026-01-01T00:00:00Z').toISOString(),
+        payload: { note: 'demo bridge event' }
+      },
+      analysis: {
+        analysis_id: 'ana-demo-bridge-001'
+      },
+      receipt: null,
+      run: {
+        run_id: 'run-demo-bridge-001',
+        completed_at: new Date('2026-01-01T00:00:01Z').toISOString()
+      }
+    })
+  );
   return registry;
 }
 
@@ -75,6 +94,31 @@ export function buildStateStackServer({ registry = createDemoRegistry() } = {}) 
         });
       }
 
+      if (method === 'GET' && path === '/demo/bridges') {
+        const subjectId = url.searchParams.get('subject_id') || null;
+        const bridges = subjectId ? registry.bridgeTimeline(subjectId) : registry.listBridgeArtifacts();
+        return sendJson(res, 200, {
+          subject_id: subjectId,
+          bridges
+        });
+      }
+
+      if (method === 'GET' && path.startsWith('/demo/bridges/')) {
+        const bridgeId = decodeURIComponent(path.slice('/demo/bridges/'.length));
+        const bridge = registry.getBridgeArtifactById(bridgeId);
+        if (!bridge) {
+          return sendJson(res, 404, { error: 'bridge not found', bridge_id: bridgeId });
+        }
+        return sendJson(res, 200, {
+          bridge_id: bridge.bridge_id,
+          bridge_type: bridge.bridge_type,
+          summary: bridge.summary,
+          normalized_record: bridge.normalized_record,
+          conversion_record: bridge.conversion_record,
+          receipt: bridge.receipt
+        });
+      }
+
       if (method === 'POST' && path === '/demo/ingest') {
         const body = await readJsonBody(req);
         const recordType = body?.record_type;
@@ -91,6 +135,12 @@ export function buildStateStackServer({ registry = createDemoRegistry() } = {}) 
         }
 
         const result = registry.ingest(body);
+        return sendJson(res, 201, result);
+      }
+
+      if (method === 'POST' && path === '/demo/bridge-ingest') {
+        const body = await readJsonBody(req);
+        const result = registry.ingestBridgeArtifact(body);
         return sendJson(res, 201, result);
       }
 

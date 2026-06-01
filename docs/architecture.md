@@ -20,6 +20,7 @@ It defines how objects, agents, sensors, messages, commands, resources, constrai
 - create deterministic receipts
 - support conversion from legacy formats
 - expose queryable timelines
+- ingest and summarize bridge artifacts from applied stacks when normalized records, conversion records, and receipts should be reviewed together
 
 ## Design Rules
 
@@ -37,4 +38,3 @@ It defines how objects, agents, sensors, messages, commands, resources, constrai
 5. receipt engine
 6. conversion record model
 7. timeline query model
-

@@ -5,4 +5,4 @@ export { createReceipt } from './engine/receiptEngine.js';
 export { createConversionRecord } from './engine/conversionEngine.js';
 export { InMemoryStateRegistry } from './registry/memoryRegistry.js';
 export { schemas } from './schemas/recordSchemas.js';
-
+export { buildStateBridgeSummary } from '@iricity/frontier-shared';
