@@ -1,6 +1,6 @@
 # Specification license
 
-The specification documents under `docs/spec/` and the JSON Schemas under `schemas/` are licensed under the Creative Commons Attribution 4.0 International License (CC BY 4.0).
+The specification documents under `docs/spec/`, the architecture decision records under `docs/adr/`, the other documents under `docs/` (models, architecture, standards mapping, roadmap) and the JSON Schemas under `schemas/` are licensed under the Creative Commons Attribution 4.0 International License (CC BY 4.0).
 
 You are free to share and adapt this material for any purpose, including commercially, provided you give appropriate credit, link to the license, and indicate if changes were made.
 

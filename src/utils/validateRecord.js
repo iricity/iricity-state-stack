@@ -1,4 +1,4 @@
-import { schemas } from '../schemas/recordSchemas.js';
+import { hasRecordSchema, schemas } from '../schemas/recordSchemas.js';
 
 /**
  * Small, dependency-free JSON Schema validator covering the subset the protocol
@@ -45,7 +45,7 @@ export function validateAgainstSchema(schema, value, path = '$', errors = []) {
     if (schema.pattern && !new RegExp(schema.pattern).test(value)) {
       errors.push(`${path} must match ${schema.pattern}`);
     }
-    if (schema.minLength !== undefined && value.length < schema.minLength) {
+    if (schema.minLength !== undefined && [...value].length < schema.minLength) {
       errors.push(`${path} must be at least ${schema.minLength} characters`);
     }
   }
@@ -66,7 +66,7 @@ export function validateAgainstSchema(schema, value, path = '$', errors = []) {
 
   if (value && typeof value === 'object' && !Array.isArray(value)) {
     for (const field of schema.required ?? []) {
-      if (!(field in value)) errors.push(`${path}.${field} is required`);
+      if (!(field in value) || value[field] === undefined) errors.push(`${path}.${field} is required`);
     }
     const properties = schema.properties ?? {};
     for (const [field, definition] of Object.entries(properties)) {
@@ -83,7 +83,7 @@ export function validateAgainstSchema(schema, value, path = '$', errors = []) {
 }
 
 export function validateRecord(recordType, record) {
-  const schema = schemas[recordType];
+  const schema = hasRecordSchema(recordType) && recordType !== 'envelope' ? schemas[recordType] : null;
   if (!schema) {
     return { ok: false, errors: [`unknown record type: ${recordType}`] };
   }

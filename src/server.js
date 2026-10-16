@@ -14,7 +14,9 @@ import {
   getSchema,
   listSchemaNames,
   navigationRecordFromOmm,
-  validateRecord
+  schemas,
+  validateRecord,
+  validateWithSchema
 } from './index.js';
 
 const DEMO_OMM = {
@@ -37,21 +39,47 @@ const DEMO_OMM = {
   MEAN_MOTION_DDOT: 0
 };
 
+const MAX_BODY_BYTES = 1024 * 1024;
+
+class ClientError extends Error {
+  constructor(message, statusCode = 400) {
+    super(message);
+    this.statusCode = statusCode;
+  }
+}
+
 function readJsonBody(req) {
   return new Promise((resolve, reject) => {
     const chunks = [];
-    req.on('data', (chunk) => chunks.push(chunk));
+    let size = 0;
+    req.on('data', (chunk) => {
+      size += chunk.length;
+      if (size > MAX_BODY_BYTES) {
+        reject(new ClientError('request body exceeds 1 MiB', 413));
+        req.destroy();
+        return;
+      }
+      chunks.push(chunk);
+    });
     req.on('end', () => {
       if (!chunks.length) return resolve({});
       try {
         const raw = Buffer.concat(chunks).toString('utf8');
         resolve(JSON.parse(raw));
       } catch (error) {
-        reject(error);
+        reject(new ClientError(`invalid JSON body: ${error.message}`));
       }
     });
     req.on('error', reject);
   });
+}
+
+function safeDecode(segment) {
+  try {
+    return decodeURIComponent(segment);
+  } catch {
+    throw new ClientError('malformed path segment');
+  }
 }
 
 function sendJson(res, statusCode, payload) {
@@ -110,7 +138,7 @@ function renderLandingPage(registry, filters = {}) {
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Iricity State Stack Demo</title>
+    <title>State Stack Demo</title>
     <style>
       body {
         margin: 0;
@@ -473,7 +501,11 @@ export function buildStateStackServer({ registry = createDemoRegistry() } = {}) 
           schemas: listSchemaNames(),
           identity: registry.identity(),
           endpoints: {
+            health: 'GET /health',
+            identity: 'GET /identity',
             schemas: 'GET /schemas, GET /schemas/:name',
+            records: 'GET /demo/records, GET /demo/timeline?subject_id=',
+            bridges: 'GET /demo/bridges, GET /demo/bridges/summary, GET /demo/bridges/:bridge_id',
             verify_envelope: 'POST /verify/envelope',
             verify_receipt: 'POST /verify/receipt',
             receipts: 'GET /demo/receipts, GET /demo/receipts/verify-chain, GET /demo/receipts/:receipt_id/verify',
@@ -494,7 +526,7 @@ export function buildStateStackServer({ registry = createDemoRegistry() } = {}) 
       }
 
       if (method === 'GET' && path.startsWith('/schemas/')) {
-        const name = decodeURIComponent(path.slice('/schemas/'.length)).replace(/.schema.json$/, '');
+        const name = safeDecode(path.slice('/schemas/'.length)).replace(/\.schema\.json$/, '');
         const schema = getSchema(name);
         if (!schema) return sendJson(res, 404, { error: 'schema not found', name });
         return sendJson(res, 200, schema);
@@ -509,7 +541,7 @@ export function buildStateStackServer({ registry = createDemoRegistry() } = {}) 
       }
 
       if (method === 'GET' && path.startsWith('/demo/receipts/') && path.endsWith('/verify')) {
-        const receiptId = decodeURIComponent(path.slice('/demo/receipts/'.length, -'/verify'.length));
+        const receiptId = safeDecode(path.slice('/demo/receipts/'.length, -'/verify'.length));
         const verification = registry.verifyReceiptById(receiptId);
         if (!verification) return sendJson(res, 404, { error: 'receipt not found', receipt_id: receiptId });
         return sendJson(res, 200, verification);
@@ -518,10 +550,17 @@ export function buildStateStackServer({ registry = createDemoRegistry() } = {}) 
       if (method === 'POST' && path === '/verify/envelope') {
         const body = await readJsonBody(req);
         const envelope = body?.envelope ?? body;
-        return sendJson(res, 200, verifyEnvelope(envelope, {
+        const verification = verifyEnvelope(envelope, {
           payload: body?.payload,
-          expected_signer: body?.expected_signer
-        }));
+          expected_signer: body?.expected_signer,
+          allowed_payload_types: Array.isArray(body?.allowed_payload_types) ? body.allowed_payload_types : undefined
+        });
+        const shape = validateWithSchema(schemas.envelope, envelope);
+        return sendJson(res, 200, {
+          ...verification,
+          schema: { valid: shape.ok, errors: shape.errors },
+          verified: verification.verified && shape.ok
+        });
       }
 
       if (method === 'POST' && path === '/verify/receipt') {
@@ -544,7 +583,8 @@ export function buildStateStackServer({ registry = createDemoRegistry() } = {}) 
       }
 
       if (method === 'GET' && path === '/demo/timeline') {
-        const subjectId = url.searchParams.get('subject_id') || 'NODE-DEMO-001';
+        const subjectId = url.searchParams.get('subject_id');
+        if (!subjectId) return sendJson(res, 400, { error: 'subject_id is required' });
         return sendJson(res, 200, {
           subject_id: subjectId,
           timeline: registry.timeline(subjectId)
@@ -579,7 +619,7 @@ export function buildStateStackServer({ registry = createDemoRegistry() } = {}) 
       }
 
       if (method === 'GET' && path.startsWith('/demo/bridges/')) {
-        const bridgeId = decodeURIComponent(path.slice('/demo/bridges/'.length));
+        const bridgeId = safeDecode(path.slice('/demo/bridges/'.length));
         const bridge = registry.getBridgeArtifactById(bridgeId);
         if (!bridge) {
           return sendJson(res, 404, { error: 'bridge not found', bridge_id: bridgeId });
@@ -609,18 +649,27 @@ export function buildStateStackServer({ registry = createDemoRegistry() } = {}) 
           });
         }
 
-        const result = registry.ingest(body);
-        return sendJson(res, 201, result);
+        try {
+          return sendJson(res, 201, registry.ingest(body));
+        } catch (error) {
+          return sendJson(res, 400, { error: 'record rejected', message: error?.message });
+        }
       }
 
       if (method === 'POST' && path === '/demo/bridge-ingest') {
         const body = await readJsonBody(req);
-        const result = registry.ingestBridgeArtifact(body);
-        return sendJson(res, 201, result);
+        try {
+          return sendJson(res, 201, registry.ingestBridgeArtifact(body));
+        } catch (error) {
+          return sendJson(res, 400, { error: 'bridge artifact rejected', message: error?.message });
+        }
       }
 
       return sendJson(res, 404, { error: 'not found' });
     } catch (error) {
+      if (error instanceof ClientError) {
+        return sendJson(res, error.statusCode, { error: 'bad_request', message: error.message });
+      }
       return sendJson(res, 500, {
         error: 'internal_error',
         message: error?.message || 'unexpected error'

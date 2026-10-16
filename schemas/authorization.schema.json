@@ -1,57 +1,155 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://schemas.iricity.space/state/authorization.schema.json",
+  "$id": "urn:frontier-state-protocol:schema:v0.1:authorization",
   "title": "Authorization",
-  "description": "What a subject may do, stated machine-readably. Shaped like a spectrum or operating license so regulator-issued credentials can be mapped onto it without loss. `profile` says who stands behind the claim.",
+  "description": "What a subject may do, stated machine-readably. Shaped like a spectrum or operating license so regulator-issued credentials can be mapped onto it without loss. profile says who stands behind the claim. Rules the schema cannot express and registries enforce: a transmit authorization declares at least one band, and lower_hz < upper_hz in every band.",
   "type": "object",
-  "required": ["record_type", "subject_id", "controller_id", "capability"],
+  "required": [
+    "record_type",
+    "subject_id",
+    "controller_id",
+    "capability"
+  ],
   "properties": {
-    "record_type": { "const": "authorization" },
-    "authorization_id": { "type": "string", "pattern": "^auth_[0-9a-f]{24}$" },
-    "subject_id": { "type": "string", "minLength": 1 },
-    "controller_id": { "type": "string", "minLength": 1, "description": "The issuer: the party asserting this authorization." },
+    "record_type": {
+      "const": "authorization"
+    },
+    "authorization_id": {
+      "type": "string",
+      "pattern": "^auth_[0-9a-f]{24}$",
+      "description": "auth_ + first 24 hex of sha256 over the canonical record without authorization_id."
+    },
+    "subject_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "controller_id": {
+      "type": "string",
+      "minLength": 1,
+      "description": "The issuer: the party asserting this authorization."
+    },
     "capability": {
       "type": "string",
-      "enum": ["receive", "transmit", "command", "schedule", "publish_data", "relay"]
+      "enum": [
+        "receive",
+        "transmit",
+        "command",
+        "schedule",
+        "publish_data",
+        "relay"
+      ]
     },
-    "scope": { "type": ["string", "null"] },
+    "scope": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
     "profile": {
       "type": "string",
-      "enum": ["self_declared", "operator_attested", "regulator_issued"]
+      "enum": [
+        "self_declared",
+        "operator_attested",
+        "regulator_issued"
+      ]
     },
-    "jurisdiction": { "type": ["string", "null"], "pattern": "^[A-Z]{2}$", "description": "ISO 3166-1 alpha-2." },
+    "jurisdiction": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^[A-Z]{2}$",
+      "description": "ISO 3166-1 alpha-2."
+    },
     "bands": {
       "type": "array",
       "items": {
         "type": "object",
-        "required": ["lower_hz", "upper_hz"],
+        "required": [
+          "lower_hz",
+          "upper_hz"
+        ],
         "properties": {
-          "lower_hz": { "type": "number", "minimum": 0 },
-          "upper_hz": { "type": "number", "minimum": 0 },
-          "service": { "type": "string" },
-          "emission_designator": { "type": "string" }
+          "lower_hz": {
+            "type": "number",
+            "minimum": 0
+          },
+          "upper_hz": {
+            "type": "number",
+            "minimum": 0
+          },
+          "service": {
+            "type": "string"
+          },
+          "emission_designator": {
+            "type": "string"
+          }
         },
         "additionalProperties": true
       }
     },
-    "max_eirp_dbw": { "type": ["number", "null"] },
+    "max_eirp_dbw": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
     "location": {
-      "type": ["object", "null"],
-      "required": ["latitude", "longitude"],
+      "type": [
+        "object",
+        "null"
+      ],
+      "required": [
+        "latitude",
+        "longitude"
+      ],
       "properties": {
-        "latitude": { "type": "number", "minimum": -90, "maximum": 90 },
-        "longitude": { "type": "number", "minimum": -180, "maximum": 180 },
-        "altitude_m": { "type": "number" },
-        "radius_km": { "type": "number", "minimum": 0 }
+        "latitude": {
+          "type": "number",
+          "minimum": -90,
+          "maximum": 90
+        },
+        "longitude": {
+          "type": "number",
+          "minimum": -180,
+          "maximum": 180
+        },
+        "altitude_m": {
+          "type": "number"
+        },
+        "radius_km": {
+          "type": "number",
+          "minimum": 0
+        }
       },
       "additionalProperties": true
     },
-    "valid_from": { "type": "string" },
-    "valid_until": { "type": ["string", "null"] },
-    "revoked": { "type": "boolean" },
-    "license_reference": { "type": ["string", "null"] },
+    "valid_from": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?Z$"
+    },
+    "valid_until": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?Z$"
+    },
+    "revoked": {
+      "type": "boolean"
+    },
+    "license_reference": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
     "proof": {
-      "type": ["string", "object", "null"],
+      "type": [
+        "string",
+        "object",
+        "null"
+      ],
       "description": "A document hash, a verifiable credential, or null for self-declared authorizations."
     }
   },

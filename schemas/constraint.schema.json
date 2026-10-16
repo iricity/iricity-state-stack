@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://schemas.iricity.space/state/constraint.schema.json",
+  "$id": "urn:frontier-state-protocol:schema:v0.1:constraint",
   "title": "Constraint",
   "type": "object",
   "required": [

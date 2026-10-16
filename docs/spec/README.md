@@ -14,8 +14,8 @@ Reference registry and demo server: this repository (`npm start`, then `GET /spe
 
 | Implementation | Language | Version | Vectors | Status |
 | --- | --- | --- | --- | --- |
-| `@iricity/frontier-shared` | JavaScript (Node 20+) | 0.2.0 | version 1, 23 of 23 | reference; npm publish pending the 0.1 freeze |
-| `iricity-frontier-shared` (Python) | Python 3.10+ | 0.2.0 | version 1, 23 of 23, no suite skipped | portability proof; PyPI publish pending the 0.1 freeze |
+| `@iricity/frontier-shared` | JavaScript (Node 20+) | 0.3.0 | version 2, 60 of 60, no suite skipped | reference; npm publish pending the 0.1 freeze |
+| `iricity-frontier-shared` (Python) | Python 3.10+ | 0.3.0 | version 2, 60 of 60, no suite skipped | portability proof; PyPI publish pending the 0.1 freeze |
 
 Both implementations verify objects produced by the other; the vectors pin canonical form, hashes, did:key framing and the exact signing inputs. A conforming third implementation is one that prints `RESULT: conformant` against the same vectors.
 

@@ -1,27 +1,91 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://schemas.iricity.space/state/receipt.schema.json",
+  "$id": "urn:frontier-state-protocol:schema:v0.1:receipt",
   "title": "Receipt",
-  "description": "Proof that a record (by canonical hash) was accepted by an issuer at a time, linked to the previous receipt. Wire format state-receipt/1.",
+  "description": "Proof that a record (by canonical hash) was accepted by an issuer at a time, linked to the previous receipt. Wire format state-receipt/1. receipt_hash is required for state-receipt/1 receipts; the verifier enforces it.",
   "type": "object",
-  "required": ["record_type", "receipt_id", "record_hash", "timestamp"],
+  "required": [
+    "record_type",
+    "receipt_id",
+    "record_hash",
+    "previous_hash",
+    "timestamp",
+    "issuer",
+    "signature_algorithm"
+  ],
   "properties": {
-    "record_type": { "const": "receipt" },
-    "receipt_version": { "type": "string" },
-    "receipt_id": { "type": "string", "minLength": 1 },
-    "record_hash": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
-    "previous_hash": { "type": ["string", "null"], "pattern": "^sha256:[0-9a-f]{64}$" },
-    "receipt_hash": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
-    "timestamp": { "type": "string" },
-    "issuer": { "type": "string", "description": "A did:key for signed receipts, a plain name otherwise." },
-    "key_id": { "type": ["string", "null"] },
-    "signature": { "type": ["string", "null"] },
+    "record_type": {
+      "const": "receipt"
+    },
+    "receipt_version": {
+      "type": "string",
+      "enum": [
+        "state-receipt/1"
+      ],
+      "description": "Required for ed25519 and unsigned receipts; absent on sha256_chain_legacy receipts."
+    },
+    "receipt_id": {
+      "type": "string",
+      "pattern": "^rcp_[0-9a-f]{16,24}$",
+      "description": "rcp_ + first 24 hex of sha256 over canonical {record_hash, previous_hash, timestamp, issuer}; legacy receipts use 16 hex of the record hash."
+    },
+    "record_hash": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "previous_hash": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "receipt_hash": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "timestamp": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?Z$"
+    },
+    "issuer": {
+      "type": "string",
+      "minLength": 1,
+      "description": "A did:key for ed25519 receipts; a plain name for unsigned or legacy receipts."
+    },
+    "key_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "signature": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
     "signature_algorithm": {
       "type": "string",
-      "enum": ["ed25519", "sha256_chain_legacy", "none"]
+      "enum": [
+        "ed25519",
+        "sha256_chain_legacy",
+        "none"
+      ]
     },
-    "verification_status": { "type": "string" },
-    "linked_receipt_id": { "type": ["string", "null"] }
+    "verification_status": {
+      "type": "string",
+      "enum": [
+        "issued",
+        "unsigned"
+      ]
+    },
+    "linked_receipt_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
   },
   "additionalProperties": true
 }

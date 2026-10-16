@@ -14,6 +14,7 @@ The planning framework requires a neutral name that describes a commons rather t
 - **Code license.** Apache-2.0 for the primitive package, the reference registry and the reference node.
 - **Publishing home.** Until a foundation or neutral organization exists, repositories live privately under the operating company's GitHub organization and the primitive package is published under the company's existing npm scope (`@iricity/frontier-shared`), because that scope is already owned and administered. The protocol name never appears in the package scope, so moving to a neutral scope later is an additive re-publish, not a rename of the protocol.
 - **Company references.** Specification text and schemas must not name the company, its products or its commercial surfaces. Operator-specific facts (legal entity, site, keys) belong in a node's manifest and authorization records, which is where they are now.
+- **Schema identifiers.** Every JSON Schema `$id` is a URN under the protocol name, `urn:frontier-state-protocol:schema:v0.1:<name>`, not a URL under any company domain. Validators resolve schemas from the repository, so no identifier has to be dereferenceable, and the URN does not change when the specification moves to a foundation. If the public name changes, the URN prefix changes with it in the next schema version.
 - **Internal project names** from private planning material never appear in public specification, code, comments or commit messages.
 
 ## Consequences

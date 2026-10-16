@@ -19,10 +19,12 @@ export const PROTOCOL = Object.freeze({
     envelope: ENVELOPE_VERSION,
     receipt: RECEIPT_VERSION,
     canonical_json: 'RFC 8785',
+    hash_reference: 'sha256 over canonical JSON of the value (strings hashed as JSON strings)',
+    timestamp: 'ISO-8601 UTC, Z suffix, optional fraction of up to three digits',
     identity: 'did:key (ed25519)',
     hash: 'sha256'
   },
   record_types: CANONICAL_STATE_RECORD_TYPES,
   payload_profiles: PAYLOAD_PROFILES,
-  conformance: '@iricity/frontier-shared/conformance'
+  conformance: { package: '@iricity/frontier-shared/conformance', vectors_version: '2', rule: 'every suite passes, none skipped' }
 });

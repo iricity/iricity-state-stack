@@ -30,7 +30,7 @@ The payload is never rewritten. Records carry it plus its hash, the profile id, 
 
 ## Canonical record types
 
-entity, authorization, time, navigation, measurement, communication, command, resource, constraint, conversion, transition, receipt. Each has a JSON Schema in `schemas/`; the validator loads those files directly, so code and spec cannot drift.
+entity, authorization, time, navigation, measurement, communication, command, resource, constraint, conversion, transition, receipt. Each has a JSON Schema in `schemas/`; the validator loads those files directly, so the schema in the repository is the one that runs. The few rules a schema cannot express (a transmit authorization needs bands, identity status values, a receipt record must verify) are enforced by the registry and listed in the specification.
 
 ## Run it
 
@@ -45,14 +45,15 @@ Endpoints:
 
 | Route | Purpose |
 | --- | --- |
+| `GET /health` | liveness, registry identity, chain length |
 | `GET /spec` | protocol description, schema index, registry identity |
 | `GET /schemas`, `GET /schemas/:name` | schema discovery and the schema documents |
 | `GET /identity` | the registry's `did:key` and signer mode |
-| `POST /verify/envelope` | verify any `state-envelope/1` object (body: the envelope, or `{envelope, payload, expected_signer}`) |
+| `POST /verify/envelope` | verify any `state-envelope/1` object (body: the envelope, or `{envelope, payload, expected_signer, allowed_payload_types}`); the result includes a schema check |
 | `POST /verify/receipt` | verify any `state-receipt/1` object (body: `{receipt, record, previous_receipt, expected_issuer}`) |
-| `POST /demo/ingest` | ingest a canonical record; returns the record and a signed receipt |
-| `POST /demo/ingest-envelope` | ingest a signed envelope; rejected unless it verifies |
-| `POST /demo/bridge-ingest` | ingest an applied-stack bridge artifact; its receipt must verify |
+| `POST /demo/ingest` | ingest a canonical record; returns the record and a signed receipt over the record exactly as sent (`400` when it does not validate) |
+| `POST /demo/ingest-envelope` | ingest a signed envelope; wrapped by its `payload_type`; rejected unless it verifies and matches the envelope schema |
+| `POST /demo/bridge-ingest` | ingest an applied-stack bridge artifact; its receipt must verify against the conversion record and the normalized record must match the conversion hash; the summary is recomputed, never trusted |
 | `GET /demo/receipts`, `/demo/receipts/verify-chain`, `/demo/receipts/:id/verify` | the registry's append-only receipt chain |
 | `GET /demo/records`, `/demo/timeline?subject_id=`, `/demo/bridges…` | inspection |
 | `GET /`, `/demo` | landing page with bridge summaries |
@@ -60,6 +61,8 @@ Endpoints:
 The registry signs every receipt. Without a configured signer it generates an ephemeral key at start and reports `signer_mode: "ephemeral"`; pass `new InMemoryStateRegistry({ signer })` to use durable key material.
 
 ## Library use
+
+The package is not published yet. Inside this workspace it is consumed from a checkout; `@iricity/frontier-shared` is vendored as a tarball under `vendor/` (see `package.json`) until the primitive package is published.
 
 ```js
 import {

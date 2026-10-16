@@ -1,30 +1,92 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://schemas.iricity.space/state/navigation.schema.json",
+  "$id": "urn:frontier-state-protocol:schema:v0.1:navigation",
   "title": "Navigation",
   "description": "Where and how something moves. For orbital elements the record wraps a CCSDS OMM unchanged (payload_profile ccsds.omm.json/1) rather than restating it.",
   "type": "object",
-  "required": ["record_type", "entity_id", "timestamp"],
+  "required": [
+    "record_type",
+    "entity_id",
+    "timestamp"
+  ],
   "properties": {
-    "record_type": { "const": "navigation" },
-    "entity_id": { "type": "string", "minLength": 1 },
-    "reference_frame": { "type": "string" },
-    "latitude": { "type": ["number", "null"] },
-    "longitude": { "type": ["number", "null"] },
-    "altitude": { "type": ["number", "null"] },
-    "velocity": { "type": ["number", "null"] },
-    "heading": { "type": ["number", "null"] },
+    "record_type": {
+      "const": "navigation"
+    },
+    "entity_id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "reference_frame": {
+      "type": "string"
+    },
+    "latitude": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "longitude": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "altitude": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "velocity": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
+    "heading": {
+      "type": [
+        "number",
+        "null"
+      ]
+    },
     "attitude": {},
     "uncertainty": {},
-    "sensor_source": { "type": "string" },
-    "timestamp": { "type": "string" },
-    "payload_profile": { "type": "string" },
-    "payload": { "type": "object" },
-    "payload_hash": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
-    "norad_cat_id": { "type": "integer" },
-    "object_name": { "type": ["string", "null"] },
-    "object_id": { "type": ["string", "null"] },
-    "epoch": { "type": "string" }
+    "sensor_source": {
+      "type": "string"
+    },
+    "timestamp": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?Z$"
+    },
+    "payload_profile": {
+      "type": "string"
+    },
+    "payload": {
+      "type": "object"
+    },
+    "payload_hash": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "norad_cat_id": {
+      "type": "integer"
+    },
+    "object_name": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "object_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "epoch": {
+      "type": "string"
+    }
   },
   "additionalProperties": true
 }

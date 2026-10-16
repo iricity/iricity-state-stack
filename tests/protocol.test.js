@@ -12,9 +12,12 @@ import {
   listSchemaNames,
   measurementRecordFromSatnogsObservation,
   navigationRecordFromOmm,
+  recordFromEnvelopePayload,
+  schemas,
   timeRecordFromPass,
   validateProfilePayload,
-  validateRecord
+  validateRecord,
+  validateWithSchema
 } from '../src/index.js';
 
 const OMM = {
@@ -37,17 +40,58 @@ const OMM = {
   MEAN_MOTION_DDOT: 0
 };
 
-test('protocol description names the three core modules and the wire formats', () => {
+const OBSERVATION = {
+  id: 12345678,
+  start: '2026-10-15T10:00:00Z',
+  end: '2026-10-15T10:09:30Z',
+  ground_station: 2134,
+  transmitter: 'abc',
+  norad_cat_id: 25544,
+  status: 'good',
+  station_name: 'Delhi test',
+  max_altitude: 41.2
+};
+
+const STAC = {
+  type: 'Feature',
+  stac_version: '1.0.0',
+  id: 'S2A_TILE_20260101',
+  collection: 'sentinel-2-l2a',
+  geometry: { type: 'Point', coordinates: [77.2, 28.6] },
+  properties: { datetime: '2026-01-01T05:30:00Z', license: 'proprietary' },
+  assets: { visual: { href: 'https://example.org/visual.tif', type: 'image/tiff; application=geotiff; profile=cloud-optimized' } },
+  links: []
+};
+
+const PASS = {
+  norad_cat_id: 25544,
+  object_name: 'ISS (ZARYA)',
+  observer_id: 'node_zone_001_delhi',
+  aos: '2026-10-16T01:00:00.000Z',
+  tca: '2026-10-16T01:05:00.000Z',
+  los: '2026-10-16T01:10:00.000Z',
+  duration_seconds: 600,
+  max_elevation_deg: 55.1,
+  aos_azimuth_deg: 210,
+  los_azimuth_deg: 40
+};
+
+test('protocol description names the three core modules, the wire formats and the conformance rule', () => {
+  assert.equal(PROTOCOL.name, 'Frontier State Protocol');
+  assert.equal(PROTOCOL.name_status, 'proposed');
   assert.deepEqual(PROTOCOL.core_modules, ['identity', 'authorization', 'verification']);
   assert.equal(PROTOCOL.wire_formats.envelope, 'state-envelope/1');
   assert.equal(PROTOCOL.wire_formats.receipt, 'state-receipt/1');
-  assert.equal(PROTOCOL.name, 'Frontier State Protocol');
-  assert.equal(PROTOCOL.name_status, 'proposed');
+  assert.equal(PROTOCOL.conformance.vectors_version, '2');
   const names = listSchemaNames();
   assert.ok(names.records.includes('authorization'));
+  assert.equal(names.records.includes('envelope'), false);
   assert.deepEqual(names.envelope, ['envelope']);
   assert.ok(names.profiles.includes('ccsds-omm'));
   assert.ok(getSchema('envelope').required.includes('signer'));
+  assert.equal(getSchema('constructor'), null);
+  assert.equal(getSchema('__proto__'), null);
+  for (const schema of [...Object.values(schemas)]) assert.match(schema.$id, /^urn:frontier-state-protocol:schema:/);
 });
 
 test('OMM payloads wrap unchanged into navigation records', () => {
@@ -60,69 +104,41 @@ test('OMM payloads wrap unchanged into navigation records', () => {
   assert.equal(validateRecord('navigation', record).ok, true);
   assert.throws(() => navigationRecordFromOmm({ ...OMM, ECCENTRICITY: 1.5 }), /invalid OMM/);
   assert.throws(() => navigationRecordFromOmm({ NORAD_CAT_ID: 1 }), /invalid OMM/);
+  assert.throws(() => navigationRecordFromOmm({ ...OMM, EPOCH: '2026-13-45T99:99:99' }), /not a valid ISO-8601/);
 });
 
 test('SatNOGS observations wrap unchanged into measurement records', () => {
-  const observation = {
-    id: 12345678,
-    start: '2026-10-15T10:00:00Z',
-    end: '2026-10-15T10:09:30Z',
-    ground_station: 2134,
-    transmitter: 'abc',
-    norad_cat_id: 25544,
-    status: 'good',
-    station_name: 'Delhi test',
-    max_altitude: 41.2
-  };
-  const record = measurementRecordFromSatnogsObservation(observation);
+  const record = measurementRecordFromSatnogsObservation(OBSERVATION);
   assert.equal(record.record_type, 'measurement');
   assert.equal(record.sensor_id, 'satnogs_station_2134');
   assert.equal(record.measurement_type, 'rf_observation');
-  assert.deepEqual(record.value, observation);
+  assert.deepEqual(record.value, OBSERVATION);
   assert.equal(record.payload_profile, 'satnogs.observation.json/1');
   assert.equal(validateRecord('measurement', record).ok, true);
   assert.equal(validateProfilePayload('satnogs-observation', { id: 1 }).ok, false);
+  assert.equal(validateProfilePayload('constructor', {}).ok, false);
 });
 
-test('STAC items wrap into data-product entity records', () => {
-  const item = {
-    type: 'Feature',
-    stac_version: '1.0.0',
-    id: 'S2A_TILE_20260101',
-    collection: 'sentinel-2-l2a',
-    geometry: { type: 'Point', coordinates: [77.2, 28.6] },
-    properties: { datetime: '2026-01-01T05:30:00Z', license: 'proprietary' },
-    assets: { visual: { href: 'https://example.org/visual.tif', type: 'image/tiff; application=geotiff; profile=cloud-optimized' } },
-    links: []
-  };
-  const record = entityRecordFromStacItem(item);
+test('STAC items wrap into data-product entity records carrying the item', () => {
+  const record = entityRecordFromStacItem(STAC);
   assert.equal(record.entity_type, 'data_product');
   assert.equal(record.stac_collection, 'sentinel-2-l2a');
+  assert.deepEqual(record.payload, STAC);
   assert.deepEqual(record.asset_keys, ['visual']);
   assert.equal(validateRecord('entity', record).ok, true);
-  assert.throws(() => entityRecordFromStacItem({ ...item, type: 'FeatureCollection' }), /invalid STAC/);
+  assert.throws(() => entityRecordFromStacItem({ ...STAC, type: 'FeatureCollection' }), /invalid STAC/);
+  assert.throws(() => entityRecordFromStacItem({ ...STAC, properties: { license: 'x' } }), /datetime/);
 });
 
 test('predicted passes become time records', () => {
-  const pass = {
-    norad_cat_id: 25544,
-    object_name: 'ISS (ZARYA)',
-    observer_id: 'node_zone_001_delhi',
-    aos: '2026-10-16T01:00:00.000Z',
-    tca: '2026-10-16T01:05:00.000Z',
-    los: '2026-10-16T01:10:00.000Z',
-    duration_seconds: 600,
-    max_elevation_deg: 55.1,
-    aos_azimuth_deg: 210,
-    los_azimuth_deg: 40
-  };
-  const record = timeRecordFromPass(pass);
+  const record = timeRecordFromPass(PASS);
   assert.equal(record.record_type, 'time');
   assert.equal(record.window_kind, 'predicted_pass');
   assert.equal(record.entity_id, 'norad_25544');
   assert.equal(record.observer_id, 'node_zone_001_delhi');
   assert.equal(validateRecord('time', record).ok, true);
-  assert.throws(() => timeRecordFromPass({ ...pass, max_elevation_deg: 95 }), /invalid pass/);
+  assert.throws(() => timeRecordFromPass({ ...PASS, max_elevation_deg: 95 }), /invalid pass/);
+  assert.throws(() => timeRecordFromPass({ ...PASS, tca: 'x' }), /not a valid/);
 });
 
 test('identity and authorization records validate against the schemas', () => {
@@ -140,24 +156,41 @@ test('identity and authorization records validate against the schemas', () => {
   assert.equal(validateRecord('authorization', authorization).ok, true);
 });
 
-test('registry ingests signed envelopes and rejects tampered ones', () => {
+test('envelopes are dispatched by payload_type on ingest and checked against the envelope schema', () => {
   const registry = new InMemoryStateRegistry();
   const node = generateEd25519KeyPair();
-  const navigation = navigationRecordFromOmm(OMM);
-  const envelope = createEnvelope({ payload: navigation, payload_type: 'state-record.json/1', signer: node });
 
-  const result = registry.ingestEnvelope(envelope);
-  assert.equal(result.record.record_type, 'navigation');
-  assert.equal(result.record.signer, node.did);
-  assert.equal(result.record.envelope_hash, envelope.envelope_hash);
-  assert.equal(result.envelope_verification.verified, true);
+  const asRecord = registry.ingestEnvelope(createEnvelope({ payload: navigationRecordFromOmm(OMM), payload_type: 'state-record.json/1', signer: node }));
+  assert.equal(asRecord.record.record_type, 'navigation');
+  assert.equal(asRecord.record.signer, node.did);
+  assert.ok(asRecord.record.envelope_hash);
 
-  const opaque = createEnvelope({ payload: { any: 'thing' }, payload_type: 'opaque.json/1', signer: node });
-  const wrapped = registry.ingestEnvelope(opaque);
-  assert.equal(wrapped.record.record_type, 'measurement');
-  assert.equal(wrapped.record.payload_profile, 'opaque.json/1');
+  const asOmm = registry.ingestEnvelope(createEnvelope({ payload: OMM, payload_type: 'ccsds.omm.json/1', signer: node }));
+  assert.equal(asOmm.record.record_type, 'navigation', 'an OMM envelope becomes a navigation record');
+  assert.equal(asOmm.record.norad_cat_id, 25544);
 
-  const tampered = { ...envelope, payload: { ...navigation, entity_id: 'norad_1' } };
-  assert.throws(() => registry.ingestEnvelope(tampered), /envelope rejected/);
+  const asObservation = registry.ingestEnvelope(createEnvelope({ payload: OBSERVATION, payload_type: 'satnogs.observation.json/1', signer: node }));
+  assert.equal(asObservation.record.measurement_type, 'rf_observation');
+
+  const asStac = registry.ingestEnvelope(createEnvelope({ payload: STAC, payload_type: 'stac.item.json/1', signer: node }));
+  assert.equal(asStac.record.entity_type, 'data_product');
+
+  const asPass = registry.ingestEnvelope(createEnvelope({ payload: PASS, payload_type: 'pass-prediction.json/1', signer: node }));
+  assert.equal(asPass.record.window_kind, 'predicted_pass');
+
+  const opaque = registry.ingestEnvelope(createEnvelope({ payload: { any: 'thing', record_type: 'entity' }, payload_type: 'opaque.json/1', signer: node }));
+  assert.equal(opaque.record.record_type, 'measurement', 'opaque payloads never become records by smuggling a record_type');
+  assert.equal(opaque.record.payload_profile, 'opaque.json/1');
+
+  assert.throws(() => registry.ingestEnvelope(createEnvelope({ payload: { x: 1 }, payload_type: 'mystery/1', signer: node })), /unknown payload_type/);
+  assert.throws(() => registry.ingestEnvelope(createEnvelope({ payload: { x: 1 }, payload_type: 'state-record.json/1', signer: node })), /canonical record/);
+  const receiptPayload = { record_type: 'receipt', receipt_id: 'rcp_' + '0'.repeat(24), record_hash: 'sha256:' + '0'.repeat(64), previous_hash: null, timestamp: '2026-01-01T00:00:00Z', issuer: 'x', signature_algorithm: 'none' };
+  assert.throws(() => registry.ingestEnvelope(createEnvelope({ payload: receiptPayload, payload_type: 'state-record.json/1', signer: node })), /does not verify/);
+
+  const envelope = createEnvelope({ payload: OMM, payload_type: 'ccsds.omm.json/1', signer: node });
+  assert.throws(() => registry.ingestEnvelope({ ...envelope, payload: { ...OMM, NORAD_CAT_ID: 1 } }), /envelope rejected/);
   assert.throws(() => registry.ingestEnvelope({ ...envelope, payload: undefined }), /payload body is required/);
+  assert.throws(() => registry.ingestEnvelope({ ...envelope, note: 'extra' }), /not allowed/);
+  assert.equal(validateWithSchema(schemas.envelope, envelope).ok, true);
+  assert.equal(recordFromEnvelopePayload('opaque.json/1', 'text', { signer: node.did }).value, 'text');
 });

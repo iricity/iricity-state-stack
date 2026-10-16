@@ -30,7 +30,7 @@ Nothing above the primitive layer implements hashing, canonicalization or signin
 | `src/profiles/` | constructors that wrap OMM, SatNOGS, STAC and pass predictions into records |
 | `src/engine/receiptEngine.js` | receipts via the shared primitive |
 | `src/engine/conversionEngine.js` | conversion records with receipts |
-| `src/registry/memoryRegistry.js` | reference registry: validate, receipt, chain, envelope ingest, bridge ingest |
+| `src/registry/memoryRegistry.js` | reference registry: validate (schema plus the semantic rules), receipt, chain, envelope ingest dispatched by `payload_type`, bridge ingest with binding checks |
 | `src/protocol.js` | machine-readable protocol description served at `GET /spec` |
 | `src/server.js` | demo server and verification endpoints |
 

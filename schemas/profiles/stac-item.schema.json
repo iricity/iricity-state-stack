@@ -1,30 +1,78 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://schemas.iricity.space/state/profiles/stac-item.schema.json",
+  "$id": "urn:frontier-state-protocol:schema:v0.1:profiles/stac-item",
   "title": "STAC Item",
   "description": "Profile stac.item.json/1. A SpatioTemporal Asset Catalog Item (GeoJSON Feature) carried unchanged. Full validation belongs to the STAC item schema at schemas.stacspec.org; this profile checks the structural keys the registry indexes.",
   "type": "object",
-  "required": ["type", "stac_version", "id", "geometry", "properties", "assets", "links"],
+  "required": [
+    "type",
+    "stac_version",
+    "id",
+    "geometry",
+    "properties",
+    "assets",
+    "links"
+  ],
   "properties": {
-    "type": { "const": "Feature" },
-    "stac_version": { "type": "string", "pattern": "^1\\." },
-    "stac_extensions": { "type": "array", "items": { "type": "string" } },
-    "id": { "type": "string", "minLength": 1 },
-    "collection": { "type": "string" },
-    "geometry": { "type": ["object", "null"] },
-    "bbox": { "type": "array", "items": { "type": "number" } },
+    "type": {
+      "const": "Feature"
+    },
+    "stac_version": {
+      "type": "string",
+      "pattern": "^1\\."
+    },
+    "stac_extensions": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "id": {
+      "type": "string",
+      "minLength": 1
+    },
+    "collection": {
+      "type": "string"
+    },
+    "geometry": {
+      "type": [
+        "object",
+        "null"
+      ]
+    },
+    "bbox": {
+      "type": "array",
+      "items": {
+        "type": "number"
+      }
+    },
     "properties": {
       "type": "object",
       "properties": {
-        "datetime": { "type": ["string", "null"] },
-        "start_datetime": { "type": "string" },
-        "end_datetime": { "type": "string" },
-        "license": { "type": "string" }
+        "datetime": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "start_datetime": {
+          "type": "string"
+        },
+        "end_datetime": {
+          "type": "string"
+        },
+        "license": {
+          "type": "string"
+        }
       },
       "additionalProperties": true
     },
-    "assets": { "type": "object" },
-    "links": { "type": "array" }
+    "assets": {
+      "type": "object"
+    },
+    "links": {
+      "type": "array"
+    }
   },
   "additionalProperties": true
 }
