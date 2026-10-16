@@ -14,7 +14,7 @@
     "spec": "node -e \"import('./src/index.js').then(m=>console.log(JSON.stringify(m.PROTOCOL,null,2)))\""
   },
   "dependencies": {
-    "@iricity/frontier-shared": "file:../iricity-frontier-shared"
+    "@iricity/frontier-shared": "file:vendor/iricity-frontier-shared-0.2.0.tgz"
   },
   "license": "Apache-2.0"
 }
