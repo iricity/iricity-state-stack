@@ -1,18 +1,27 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.iricity.space/state/receipt.schema.json",
   "title": "Receipt",
+  "description": "Proof that a record (by canonical hash) was accepted by an issuer at a time, linked to the previous receipt. Wire format state-receipt/1.",
   "type": "object",
   "required": ["record_type", "receipt_id", "record_hash", "timestamp"],
   "properties": {
     "record_type": { "const": "receipt" },
-    "receipt_id": { "type": "string" },
-    "record_hash": { "type": "string" },
-    "previous_hash": { "type": ["string", "null"] },
+    "receipt_version": { "type": "string" },
+    "receipt_id": { "type": "string", "minLength": 1 },
+    "record_hash": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "previous_hash": { "type": ["string", "null"], "pattern": "^sha256:[0-9a-f]{64}$" },
+    "receipt_hash": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
     "timestamp": { "type": "string" },
-    "issuer": { "type": "string" },
-    "signature": { "type": "string" },
-    "verification_status": { "type": "string" }
+    "issuer": { "type": "string", "description": "A did:key for signed receipts, a plain name otherwise." },
+    "key_id": { "type": ["string", "null"] },
+    "signature": { "type": ["string", "null"] },
+    "signature_algorithm": {
+      "type": "string",
+      "enum": ["ed25519", "sha256_chain_legacy", "none"]
+    },
+    "verification_status": { "type": "string" },
+    "linked_receipt_id": { "type": ["string", "null"] }
   },
   "additionalProperties": true
 }
-

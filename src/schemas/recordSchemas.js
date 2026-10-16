@@ -1,142 +1,41 @@
-const baseRecord = {
-  type: 'object',
-  required: ['record_type'],
-  properties: {
-    record_type: { type: 'string' }
-  }
-};
+import fs from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 
-export const schemas = {
-  entity: {
-    ...baseRecord,
-    required: ['record_type', 'entity_id', 'entity_type', 'created_at'],
-    properties: {
-      ...baseRecord.properties,
-      record_type: { const: 'entity' },
-      entity_id: { type: 'string' },
-      entity_type: { type: 'string' },
-      created_at: { type: 'string' }
-    }
-  },
-  authorization: {
-    ...baseRecord,
-    required: ['record_type', 'subject_id', 'controller_id', 'capability'],
-    properties: {
-      ...baseRecord.properties,
-      record_type: { const: 'authorization' },
-      subject_id: { type: 'string' },
-      controller_id: { type: 'string' },
-      capability: { type: 'string' }
-    }
-  },
-  time: {
-    ...baseRecord,
-    required: ['record_type', 'timestamp'],
-    properties: {
-      ...baseRecord.properties,
-      record_type: { const: 'time' },
-      timestamp: { type: 'string' }
-    }
-  },
-  navigation: {
-    ...baseRecord,
-    required: ['record_type', 'entity_id', 'timestamp'],
-    properties: {
-      ...baseRecord.properties,
-      record_type: { const: 'navigation' },
-      entity_id: { type: 'string' },
-      timestamp: { type: 'string' }
-    }
-  },
-  measurement: {
-    ...baseRecord,
-    required: ['record_type', 'sensor_id', 'measurement_type', 'timestamp'],
-    properties: {
-      ...baseRecord.properties,
-      record_type: { const: 'measurement' },
-      sensor_id: { type: 'string' },
-      measurement_type: { type: 'string' },
-      timestamp: { type: 'string' }
-    }
-  },
-  communication: {
-    ...baseRecord,
-    required: ['record_type', 'message_id', 'source_node', 'destination_node', 'timestamp'],
-    properties: {
-      ...baseRecord.properties,
-      record_type: { const: 'communication' },
-      message_id: { type: 'string' },
-      source_node: { type: 'string' },
-      destination_node: { type: 'string' },
-      timestamp: { type: 'string' }
-    }
-  },
-  command: {
-    ...baseRecord,
-    required: ['record_type', 'command_id', 'issuer', 'target'],
-    properties: {
-      ...baseRecord.properties,
-      record_type: { const: 'command' },
-      command_id: { type: 'string' },
-      issuer: { type: 'string' },
-      target: { type: 'string' }
-    }
-  },
-  resource: {
-    ...baseRecord,
-    required: ['record_type', 'resource_type', 'quantity', 'unit'],
-    properties: {
-      ...baseRecord.properties,
-      record_type: { const: 'resource' },
-      resource_type: { type: 'string' },
-      quantity: { type: 'number' },
-      unit: { type: 'string' }
-    }
-  },
-  constraint: {
-    ...baseRecord,
-    required: ['record_type', 'constraint_id', 'constraint_type'],
-    properties: {
-      ...baseRecord.properties,
-      record_type: { const: 'constraint' },
-      constraint_id: { type: 'string' },
-      constraint_type: { type: 'string' }
-    }
-  },
-  conversion: {
-    ...baseRecord,
-    required: ['record_type', 'source_system', 'source_format', 'raw_record_hash', 'normalized_record_hash'],
-    properties: {
-      ...baseRecord.properties,
-      record_type: { const: 'conversion' },
-      source_system: { type: 'string' },
-      source_format: { type: 'string' },
-      raw_record_hash: { type: 'string' },
-      normalized_record_hash: { type: 'string' }
-    }
-  },
-  transition: {
-    ...baseRecord,
-    required: ['record_type', 'transition_id', 'subject_id', 'from_state', 'to_state'],
-    properties: {
-      ...baseRecord.properties,
-      record_type: { const: 'transition' },
-      transition_id: { type: 'string' },
-      subject_id: { type: 'string' },
-      from_state: { type: 'string' },
-      to_state: { type: 'string' }
-    }
-  },
-  receipt: {
-    ...baseRecord,
-    required: ['record_type', 'receipt_id', 'record_hash', 'timestamp'],
-    properties: {
-      ...baseRecord.properties,
-      record_type: { const: 'receipt' },
-      receipt_id: { type: 'string' },
-      record_hash: { type: 'string' },
-      timestamp: { type: 'string' }
-    }
-  }
-};
+/**
+ * The JSON Schema files under /schemas are the specification. This module loads
+ * them once so the validator, the server and the tests all read the same source.
+ */
 
+const schemasDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../schemas');
+
+function loadDirectory(directory, suffix) {
+  const loaded = {};
+  if (!fs.existsSync(directory)) return loaded;
+  for (const file of fs.readdirSync(directory).sort()) {
+    if (!file.endsWith(suffix)) continue;
+    const name = file.slice(0, -suffix.length);
+    loaded[name] = JSON.parse(fs.readFileSync(path.join(directory, file), 'utf8'));
+  }
+  return loaded;
+}
+
+/** Canonical record schemas keyed by record_type (entity, authorization, …, receipt). */
+export const schemas = loadDirectory(schemasDir, '.schema.json');
+
+/** Payload profile schemas keyed by profile file name (ccsds-omm, satnogs-observation, …). */
+export const profileSchemas = loadDirectory(path.join(schemasDir, 'profiles'), '.schema.json');
+
+export const recordTypes = Object.keys(schemas).filter((name) => name !== 'envelope');
+
+export function getSchema(name) {
+  return schemas[name] ?? profileSchemas[name] ?? null;
+}
+
+export function listSchemaNames() {
+  return {
+    records: recordTypes,
+    envelope: schemas.envelope ? ['envelope'] : [],
+    profiles: Object.keys(profileSchemas)
+  };
+}

@@ -1,7 +1,41 @@
 import http from 'node:http';
 import { pathToFileURL } from 'node:url';
-import { CANONICAL_STATE_RECORD_TYPES, buildStateBridgeArtifact } from '@iricity/frontier-shared';
-import { InMemoryStateRegistry, schemas, validateRecord } from './index.js';
+import {
+  CANONICAL_STATE_RECORD_TYPES,
+  buildStateBridgeArtifact,
+  createAuthorizationRecord,
+  createIdentityRecord,
+  verifyEnvelope,
+  verifyReceiptRecord
+} from '@iricity/frontier-shared';
+import {
+  InMemoryStateRegistry,
+  PROTOCOL,
+  getSchema,
+  listSchemaNames,
+  navigationRecordFromOmm,
+  validateRecord
+} from './index.js';
+
+const DEMO_OMM = {
+  OBJECT_NAME: 'ISS (ZARYA)',
+  OBJECT_ID: '1998-067A',
+  EPOCH: '2026-10-15T19:43:34.186944',
+  MEAN_MOTION: 15.48879905,
+  ECCENTRICITY: 0.00067551,
+  INCLINATION: 51.6317,
+  RA_OF_ASC_NODE: 63.1136,
+  ARG_OF_PERICENTER: 265.8514,
+  MEAN_ANOMALY: 94.1703,
+  EPHEMERIS_TYPE: 0,
+  CLASSIFICATION_TYPE: 'U',
+  NORAD_CAT_ID: 25544,
+  ELEMENT_SET_NO: 999,
+  REV_AT_EPOCH: 59045,
+  BSTAR: 0.00010980148,
+  MEAN_MOTION_DOT: 0.0000558,
+  MEAN_MOTION_DDOT: 0
+};
 
 function readJsonBody(req) {
   return new Promise((resolve, reject) => {
@@ -359,6 +393,25 @@ function renderLandingPage(registry, filters = {}) {
 
 function createDemoRegistry() {
   const registry = new InMemoryStateRegistry();
+  const identity = registry.identity();
+  registry.ingest(createIdentityRecord({
+    entity_id: 'registry_demo_001',
+    identity_type: 'service',
+    did: identity.did,
+    controller_id: 'iricity-state-stack',
+    display_name: 'State stack demo registry',
+    created_at: new Date('2026-01-01T00:00:00Z').toISOString()
+  }));
+  registry.ingest(createAuthorizationRecord({
+    subject_id: 'NODE-DEMO-001',
+    controller_id: 'registry_demo_001',
+    capability: 'receive',
+    scope: 'demo_receive_only',
+    jurisdiction: 'IN',
+    location: { latitude: 28.6139, longitude: 77.209, radius_km: 25 },
+    valid_from: '2026-01-01T00:00:00Z'
+  }));
+  registry.ingest(navigationRecordFromOmm(DEMO_OMM, { sensor_source: 'celestrak_fixture' }));
   registry.ingest({
     record_type: 'entity',
     entity_id: 'NODE-DEMO-001',
@@ -408,14 +461,86 @@ export function buildStateStackServer({ registry = createDemoRegistry() } = {}) 
         return sendJson(res, 200, {
           ok: true,
           service: 'iricity-state-stack',
-          mode: 'local_demo'
+          mode: 'local_demo',
+          protocol: { name: PROTOCOL.name, version: PROTOCOL.version },
+          identity: registry.identity()
         });
+      }
+
+      if (method === 'GET' && path === '/spec') {
+        return sendJson(res, 200, {
+          ...PROTOCOL,
+          schemas: listSchemaNames(),
+          identity: registry.identity(),
+          endpoints: {
+            schemas: 'GET /schemas, GET /schemas/:name',
+            verify_envelope: 'POST /verify/envelope',
+            verify_receipt: 'POST /verify/receipt',
+            receipts: 'GET /demo/receipts, GET /demo/receipts/verify-chain, GET /demo/receipts/:receipt_id/verify',
+            ingest: 'POST /demo/ingest, POST /demo/ingest-envelope, POST /demo/bridge-ingest'
+          }
+        });
+      }
+
+      if (method === 'GET' && path === '/identity') {
+        return sendJson(res, 200, registry.identity());
       }
 
       if (method === 'GET' && path === '/schemas') {
         return sendJson(res, 200, {
-          schemas: CANONICAL_STATE_RECORD_TYPES
+          schemas: CANONICAL_STATE_RECORD_TYPES,
+          ...listSchemaNames()
         });
+      }
+
+      if (method === 'GET' && path.startsWith('/schemas/')) {
+        const name = decodeURIComponent(path.slice('/schemas/'.length)).replace(/.schema.json$/, '');
+        const schema = getSchema(name);
+        if (!schema) return sendJson(res, 404, { error: 'schema not found', name });
+        return sendJson(res, 200, schema);
+      }
+
+      if (method === 'GET' && path === '/demo/receipts') {
+        return sendJson(res, 200, { identity: registry.identity(), receipts: registry.listReceipts() });
+      }
+
+      if (method === 'GET' && path === '/demo/receipts/verify-chain') {
+        return sendJson(res, 200, registry.verifyChain());
+      }
+
+      if (method === 'GET' && path.startsWith('/demo/receipts/') && path.endsWith('/verify')) {
+        const receiptId = decodeURIComponent(path.slice('/demo/receipts/'.length, -'/verify'.length));
+        const verification = registry.verifyReceiptById(receiptId);
+        if (!verification) return sendJson(res, 404, { error: 'receipt not found', receipt_id: receiptId });
+        return sendJson(res, 200, verification);
+      }
+
+      if (method === 'POST' && path === '/verify/envelope') {
+        const body = await readJsonBody(req);
+        const envelope = body?.envelope ?? body;
+        return sendJson(res, 200, verifyEnvelope(envelope, {
+          payload: body?.payload,
+          expected_signer: body?.expected_signer
+        }));
+      }
+
+      if (method === 'POST' && path === '/verify/receipt') {
+        const body = await readJsonBody(req);
+        const receipt = body?.receipt ?? body;
+        return sendJson(res, 200, verifyReceiptRecord(receipt, {
+          record: body?.record,
+          previous_receipt: body?.previous_receipt,
+          expected_issuer: body?.expected_issuer
+        }));
+      }
+
+      if (method === 'POST' && path === '/demo/ingest-envelope') {
+        const body = await readJsonBody(req);
+        try {
+          return sendJson(res, 201, registry.ingestEnvelope(body));
+        } catch (error) {
+          return sendJson(res, 400, { error: 'envelope rejected', message: error?.message });
+        }
       }
 
       if (method === 'GET' && path === '/demo/timeline') {

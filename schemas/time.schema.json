@@ -1,6 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.iricity.space/state/time.schema.json",
   "title": "Time",
+  "description": "When, under which clock. Also used for predicted contact windows (window_kind predicted_pass).",
   "type": "object",
   "required": ["record_type", "timestamp"],
   "properties": {
@@ -10,8 +12,18 @@
     "clock_source": { "type": "string" },
     "clock_uncertainty": { "type": "string" },
     "sync_method": { "type": "string" },
-    "drift_bound": { "type": "string" }
+    "drift_bound": { "type": "string" },
+    "window_kind": { "type": "string" },
+    "window_start": { "type": "string" },
+    "window_end": { "type": "string" },
+    "time_of_closest_approach": { "type": "string" },
+    "max_elevation_deg": { "type": "number", "minimum": 0, "maximum": 90 },
+    "duration_seconds": { "type": "number", "minimum": 0 },
+    "entity_id": { "type": "string" },
+    "observer_id": { "type": ["string", "null"] },
+    "payload_profile": { "type": "string" },
+    "payload": { "type": "object" },
+    "payload_hash": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" }
   },
   "additionalProperties": true
 }
-

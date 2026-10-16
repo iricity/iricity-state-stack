@@ -1,18 +1,28 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.iricity.space/state/entity.schema.json",
   "title": "Entity",
+  "description": "What exists. When identity_type and did are present this is an identity record: a machine actor with an ed25519 did:key.",
   "type": "object",
   "required": ["record_type", "entity_id", "entity_type", "created_at"],
   "properties": {
     "record_type": { "const": "entity" },
-    "entity_id": { "type": "string" },
-    "entity_type": { "type": "string" },
-    "controller_id": { "type": "string" },
+    "entity_id": { "type": "string", "minLength": 1 },
+    "entity_type": { "type": "string", "minLength": 1 },
+    "identity_type": {
+      "type": "string",
+      "enum": ["organization", "operator", "node", "ground_station", "satellite", "sensor", "agent", "service"]
+    },
+    "did": { "type": ["string", "null"], "pattern": "^did:key:z6Mk[1-9A-HJ-NP-Za-km-z]+$" },
+    "public_key_multibase": { "type": ["string", "null"], "pattern": "^z6Mk[1-9A-HJ-NP-Za-km-z]+$" },
     "public_key": { "type": "string" },
+    "controller_id": { "type": "string" },
+    "display_name": { "type": ["string", "null"] },
     "status": { "type": "string" },
     "created_at": { "type": "string" },
-    "metadata_hash": { "type": "string" }
+    "metadata_hash": { "type": "string" },
+    "payload_profile": { "type": "string" },
+    "payload_hash": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" }
   },
   "additionalProperties": true
 }
-

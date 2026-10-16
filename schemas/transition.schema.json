@@ -1,18 +1,46 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.iricity.space/state/transition.schema.json",
   "title": "Transition",
   "type": "object",
-  "required": ["record_type", "transition_id", "subject_id", "from_state", "to_state"],
+  "required": [
+    "record_type",
+    "transition_id",
+    "subject_id",
+    "from_state",
+    "to_state"
+  ],
   "properties": {
-    "record_type": { "const": "transition" },
-    "transition_id": { "type": "string" },
-    "subject_id": { "type": "string" },
-    "from_state": { "type": "string" },
-    "to_state": { "type": "string" },
-    "reason": { "type": "string" },
-    "timestamp": { "type": "string" },
-    "receipt_id": { "type": "string" }
+    "record_type": {
+      "const": "transition"
+    },
+    "transition_id": {
+      "type": "string"
+    },
+    "subject_id": {
+      "type": "string"
+    },
+    "from_state": {
+      "type": "string"
+    },
+    "to_state": {
+      "type": "string"
+    },
+    "reason": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "timestamp": {
+      "type": "string"
+    },
+    "receipt_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
   },
   "additionalProperties": true
 }
-

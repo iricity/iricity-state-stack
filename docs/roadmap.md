@@ -1,44 +1,24 @@
 # Roadmap
 
-## Phase 0 - Lock The Vocabulary
+## Done
 
-- freeze the canonical record list
-- freeze the conversion model
-- freeze the receipt model
-- freeze the standards mapping
+- Vocabulary and schema model locked; schemas are the single source for the validator.
+- Primitive layer with conformance vectors (`@iricity/frontier-shared`): canonical JSON, hashing, `did:key` identity, signed envelopes, signed receipt chains.
+- Protocol 0.1 draft: identity, authorization, verification; payload profiles for OMM, SatNOGS observations, STAC items, pass predictions.
+- Reference registry: signed, chained receipts; envelope ingest; bridge-artifact verification; verification endpoints open to anyone.
+- Applied stack integration: the space stack produces pass predictions, signed observations, node identity and authorization records against this spec.
 
-## Phase 1 - Foundation MVP
+## Next
 
-- canonical JSON utility
-- SHA-256 utility
-- schema validator
-- in-memory registry
-- receipt engine
-- entity and authorization records
-- navigation and measurement records
-- communication and command records
+1. **Freeze 0.1.** Resolve the working name (ADR 0004), tag the vectors, publish the primitive package.
+2. **Second implementation.** A Python implementation of the primitives that passes the vectors, to prove the spec is language-neutral.
+3. **Persistence.** A file- or SQLite-backed registry with the same interface as the in-memory one.
+4. **Regulator-issued authorizations.** Verifiable Credential proof on the authorization record; a sample mapping from one national amateur license.
+5. **Federation sketch.** Two registries exchanging receipts and identities; conflict rules.
+6. **Domain modules.** polar, ocean, geo, lunar: each is a set of payload profiles and adapters, not new primitives.
 
-## Phase 2 - Adapter Layer
+## Not planned
 
-- JSON adapter
-- CSV adapter
-- webhook adapter
-- generic sensor adapter
-- communication log adapter
-- database row adapter
-
-## Phase 3 - Apply To Space Stack
-
-- make `iricity-space-stack` consume the canonical foundation where useful
-- keep public APIs stable
-- keep proofs and receipts visible
-- add bridge artifact ingest/query support so normalized records, conversion records, and receipts can be reviewed together from the state stack demo surface
-- add bridge summary reporting and filtered lookup support so applied-stack bridge traffic can be reviewed by source system or bridge type
-
-## Phase 4 - Expand Domain Modules
-
-- polar
-- ocean
-- geo
-- lunar
-- quantum profile
+- A scheduling layer of our own (ADR 0006).
+- Tokens or transferable credits of any kind.
+- A second canonical form or hash function in 0.x.

@@ -1,19 +1,46 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.iricity.space/state/command.schema.json",
   "title": "Command",
   "type": "object",
-  "required": ["record_type", "command_id", "issuer", "target"],
+  "required": [
+    "record_type",
+    "command_id",
+    "issuer",
+    "target"
+  ],
   "properties": {
-    "record_type": { "const": "command" },
-    "command_id": { "type": "string" },
-    "issuer": { "type": "string" },
-    "target": { "type": "string" },
-    "command_type": { "type": "string" },
-    "authorization": { "type": "string" },
-    "pre_state_hash": { "type": "string" },
-    "post_state_hash": { "type": "string" },
-    "execution_status": { "type": "string" }
+    "record_type": {
+      "const": "command"
+    },
+    "command_id": {
+      "type": "string"
+    },
+    "issuer": {
+      "type": "string"
+    },
+    "target": {
+      "type": "string"
+    },
+    "command_type": {
+      "type": "string"
+    },
+    "authorization": {
+      "type": [
+        "string",
+        "null"
+      ],
+      "description": "authorization_id of the authorization record that permitted this command"
+    },
+    "pre_state_hash": {
+      "type": "string"
+    },
+    "post_state_hash": {
+      "type": "string"
+    },
+    "execution_status": {
+      "type": "string"
+    }
   },
   "additionalProperties": true
 }
-

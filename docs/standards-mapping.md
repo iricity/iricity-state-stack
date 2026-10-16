@@ -1,52 +1,37 @@
 # Standards Mapping
 
-## Purpose
+## Principle
 
-This repo does not implement full protocol interoperability first.
+Build on, do not fork. Where an established standard defines a payload, the protocol carries that payload unchanged under a payload profile and adds identity, time and hashes around it (ADR 0003). Where no standard exists, the protocol defines the smallest object that does the job and says so.
 
-It defines field-level and conceptual alignment so future adapters can map into external standards cleanly.
+## Adopted as-is
 
-## Primary References
+| Standard | Used for | How |
+| --- | --- | --- |
+| RFC 8785 JSON Canonicalization Scheme | every hash and signature | `canonicalJson` in the primitive layer; vectors include the RFC sample |
+| RFC 8032 Ed25519 | signatures | Node `crypto`; vectors include RFC tests 1 and 2 |
+| W3C DID Core, did:key method | identity | `did:key:z6Mk…` with multicodec ed25519-pub |
+| CCSDS 502.0-B Orbit Data Messages (OMM) | orbital elements | profile `ccsds.omm.json/1`, JSON key-value form as served by CelesTrak and Space-Track |
+| SatNOGS Network API observation | RF observations | profile `satnogs.observation.json/1` |
+| STAC 1.x Item | data products | profile `stac.item.json/1` |
+| ISO 3166-1 alpha-2 | jurisdiction in authorizations | pattern-checked |
 
-### CCSDS
+## Aligned conceptually, adopted later
 
-Use for:
-- navigation data messages
-- orbit and attitude record shapes
-- mission data system alignment
+| Standard | Planned use |
+| --- | --- |
+| W3C Verifiable Credentials | the `proof` field of regulator-issued authorizations |
+| IETF RFC 9171 DTN Bundle Protocol | transport for data exchange between nodes with intermittent links |
+| CCSDS SLE and service management | commercial ground-station adapters |
+| XTCE | telemetry definitions when a mission-control adapter is added |
+| SANA registries | identifier governance if the protocol reaches standards bodies |
+| NIST post-quantum signatures | a second signature algorithm in a future envelope version |
 
-### SANA
+## Defined here
 
-Use for:
-- registry thinking
-- assigned-number style governance
-- identifier and reference-frame structure
-
-### DTN / Bundle Protocol
-
-Use for:
-- communication record structure
-- intermittent-network delivery concepts
-- security and payload block thinking
-
-### LunaNet
-
-Use for:
-- integrated communications and PNT alignment
-- future space-domain service models
-
-### NIST PQC
-
-Use later for:
-- quantum-safe identity and proof profiles
-- post-quantum signature and key exchange metadata
-
-## Mapping Principle
-
-The goal is not binary compatibility in v1.
-
-The goal is:
-- field compatibility
-- conceptual alignment
-- adapter-friendly evolution
-
+| Object | Why no external standard fits |
+| --- | --- |
+| `state-envelope/1` | a detached-capable, chainable signature header over an arbitrary standard payload |
+| `state-receipt/1` | an append-only acceptance log with identity-bound signatures |
+| `pass-prediction.json/1` | no interoperable JSON form exists for a predicted contact window |
+| authorization record | a license-shaped, machine-readable statement of permitted capability that regulator credentials can map onto |

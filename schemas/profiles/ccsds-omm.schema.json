@@ -1,0 +1,37 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.iricity.space/state/profiles/ccsds-omm.schema.json",
+  "title": "CCSDS Orbit Mean-Elements Message (JSON key-value form)",
+  "description": "Profile ccsds.omm.json/1. The mandatory OMM metadata and mean Keplerian elements in the JSON key-value form published by CelesTrak and Space-Track, carried unchanged. Defined by CCSDS 502.0-B (Orbit Data Messages); this schema only checks the keys needed for SGP4 propagation and identification.",
+  "type": "object",
+  "required": [
+    "EPOCH",
+    "MEAN_MOTION",
+    "ECCENTRICITY",
+    "INCLINATION",
+    "RA_OF_ASC_NODE",
+    "ARG_OF_PERICENTER",
+    "MEAN_ANOMALY",
+    "NORAD_CAT_ID"
+  ],
+  "properties": {
+    "OBJECT_NAME": { "type": "string" },
+    "OBJECT_ID": { "type": "string" },
+    "EPOCH": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d+)?Z?$" },
+    "MEAN_MOTION": { "type": "number", "minimum": 0 },
+    "ECCENTRICITY": { "type": "number", "minimum": 0, "maximum": 1 },
+    "INCLINATION": { "type": "number", "minimum": 0, "maximum": 180 },
+    "RA_OF_ASC_NODE": { "type": "number", "minimum": 0, "maximum": 360 },
+    "ARG_OF_PERICENTER": { "type": "number", "minimum": 0, "maximum": 360 },
+    "MEAN_ANOMALY": { "type": "number", "minimum": 0, "maximum": 360 },
+    "EPHEMERIS_TYPE": { "type": "integer" },
+    "CLASSIFICATION_TYPE": { "type": "string" },
+    "NORAD_CAT_ID": { "type": "integer", "minimum": 1 },
+    "ELEMENT_SET_NO": { "type": "integer" },
+    "REV_AT_EPOCH": { "type": "integer" },
+    "BSTAR": { "type": "number" },
+    "MEAN_MOTION_DOT": { "type": "number" },
+    "MEAN_MOTION_DDOT": { "type": "number" }
+  },
+  "additionalProperties": true
+}

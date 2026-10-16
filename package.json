@@ -1,18 +1,20 @@
 {
   "name": "iricity-state-stack",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
-  "description": "Canonical machine-state foundation for Iricity frontier systems.",
+  "description": "Specification home and reference registry for the state protocol: canonical records, JSON Schemas, payload profiles, signed receipts.",
   "engines": {
     "node": ">=20"
   },
   "scripts": {
     "test": "node --test",
     "start": "node src/server.js",
-    "dev": "node --watch src/server.js"
+    "dev": "node --watch src/server.js",
+    "spec": "node -e \"import('./src/index.js').then(m=>console.log(JSON.stringify(m.PROTOCOL,null,2)))\""
   },
   "dependencies": {
     "@iricity/frontier-shared": "file:../iricity-frontier-shared"
-  }
+  },
+  "license": "Apache-2.0"
 }

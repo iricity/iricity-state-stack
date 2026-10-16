@@ -1,19 +1,29 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.iricity.space/state/measurement.schema.json",
   "title": "Measurement",
+  "description": "What was observed. External observation formats (for example a SatNOGS observation) are carried unchanged in value with their payload_profile and payload_hash.",
   "type": "object",
   "required": ["record_type", "sensor_id", "measurement_type", "timestamp"],
   "properties": {
     "record_type": { "const": "measurement" },
-    "sensor_id": { "type": "string" },
-    "measurement_type": { "type": "string" },
+    "sensor_id": { "type": "string", "minLength": 1 },
+    "measurement_type": { "type": "string", "minLength": 1 },
     "value": {},
     "unit": { "type": "string" },
     "uncertainty": {},
-    "calibration_id": { "type": "string" },
+    "calibration_id": { "type": ["string", "null"] },
     "timestamp": { "type": "string" },
-    "source": { "type": "string" }
+    "source": { "type": "string" },
+    "payload_profile": { "type": "string" },
+    "payload_hash": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "envelope_hash": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "signer": { "type": "string" },
+    "observation_id": {},
+    "norad_cat_id": { "type": ["integer", "null"] },
+    "ground_station": {},
+    "window_start": { "type": ["string", "null"] },
+    "window_end": { "type": ["string", "null"] }
   },
   "additionalProperties": true
 }
-

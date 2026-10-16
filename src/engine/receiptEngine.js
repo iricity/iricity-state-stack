@@ -1,22 +1,34 @@
-import { hashRecord, sha256Hex } from '../utils/hash.js';
+import { createReceiptRecord, verifyReceiptRecord, verifyReceiptChain } from '@iricity/frontier-shared';
 
+/**
+ * Receipt engine.
+ *
+ * Receipts are produced by the shared `state-receipt/1` primitive. When a signer is
+ * supplied the receipt is ed25519-signed and its issuer is the signer's did:key;
+ * otherwise the receipt is explicitly unsigned (integrity only, no identity).
+ *
+ * @param {object} record
+ * @param {object} [options]
+ * @param {object|string} [options.signer]       ed25519 signer (preferred)
+ * @param {string} [options.issuer]              plain issuer name for unsigned receipts
+ * @param {string|null} [options.previousHash]   previous receipt's receipt_hash
+ * @param {string} [options.timestamp]
+ * @param {string} [options.receiptId]
+ */
 export function createReceipt(record, options = {}) {
-  const recordHash = hashRecord(record);
-  const timestamp = options.timestamp ?? new Date().toISOString();
-  const issuer = options.issuer ?? 'iricity-state-stack';
-  const previousHash = options.previousHash ?? null;
-
-  const signature = sha256Hex([recordHash, previousHash ?? '', issuer, timestamp].join('|'));
-
-  return {
-    record_type: 'receipt',
-    receipt_id: options.receiptId ?? `rcp_${recordHash.slice(0, 16)}`,
-    record_hash: recordHash,
-    previous_hash: previousHash,
-    timestamp,
-    issuer,
-    signature,
-    verification_status: 'issued'
-  };
+  return createReceiptRecord({
+    record,
+    previous_hash: options.previousHash ?? null,
+    issuer: options.signer ?? options.issuer ?? 'iricity-state-stack',
+    timestamp: options.timestamp,
+    receipt_id: options.receiptId
+  });
 }
 
+export function verifyReceipt(receipt, options = {}) {
+  return verifyReceiptRecord(receipt, options);
+}
+
+export function verifyChain(receipts, options = {}) {
+  return verifyReceiptChain(receipts, options);
+}

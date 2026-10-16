@@ -1,0 +1,30 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.iricity.space/state/envelope.schema.json",
+  "title": "Signed Envelope",
+  "description": "Wire format state-envelope/1. The ed25519 signature covers the canonical JSON of the header fields (envelope_version, payload_type, payload_hash, signer, created_at, previous_envelope_hash) prefixed with the domain tag 'state-envelope/1:'. The payload travels unchanged and may be detached.",
+  "type": "object",
+  "required": ["envelope_version", "payload_type", "payload_hash", "signer", "created_at", "signature"],
+  "properties": {
+    "envelope_version": { "const": "state-envelope/1" },
+    "envelope_id": { "type": "string", "pattern": "^env_[0-9a-f]{24}$" },
+    "envelope_hash": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "payload_type": { "type": "string", "minLength": 1 },
+    "payload_hash": { "type": "string", "pattern": "^sha256:[0-9a-f]{64}$" },
+    "payload": {},
+    "signer": { "type": "string", "pattern": "^did:key:z6Mk[1-9A-HJ-NP-Za-km-z]+$" },
+    "created_at": { "type": "string" },
+    "previous_envelope_hash": { "type": ["string", "null"], "pattern": "^sha256:[0-9a-f]{64}$" },
+    "signature": {
+      "type": "object",
+      "required": ["algorithm", "value"],
+      "properties": {
+        "algorithm": { "const": "ed25519" },
+        "key_id": { "type": "string" },
+        "value": { "type": "string", "description": "base64url, no padding" }
+      },
+      "additionalProperties": false
+    }
+  },
+  "additionalProperties": false
+}

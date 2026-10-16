@@ -1,20 +1,64 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://schemas.iricity.space/state/conversion.schema.json",
   "title": "Conversion",
   "type": "object",
-  "required": ["record_type", "source_system", "source_format", "raw_record_hash", "normalized_record_hash"],
+  "required": [
+    "record_type",
+    "source_system",
+    "source_format",
+    "raw_record_hash",
+    "normalized_record_hash"
+  ],
   "properties": {
-    "record_type": { "const": "conversion" },
-    "source_system": { "type": "string" },
-    "source_format": { "type": "string" },
-    "raw_record_hash": { "type": "string" },
-    "adapter_name": { "type": "string" },
-    "adapter_version": { "type": "string" },
-    "normalized_record_hash": { "type": "string" },
-    "conversion_rule": { "type": "string" },
-    "ingested_at": { "type": "string" },
-    "receipt_id": { "type": "string" }
+    "record_type": {
+      "const": "conversion"
+    },
+    "source_system": {
+      "type": "string"
+    },
+    "source_format": {
+      "type": "string"
+    },
+    "raw_record_hash": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "adapter_name": {
+      "type": "string"
+    },
+    "adapter_version": {
+      "type": "string"
+    },
+    "normalized_record_hash": {
+      "type": "string",
+      "pattern": "^sha256:[0-9a-f]{64}$"
+    },
+    "conversion_rule": {
+      "type": "string"
+    },
+    "ingested_at": {
+      "type": "string"
+    },
+    "receipt_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "source_event_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    },
+    "source_analysis_id": {
+      "type": [
+        "string",
+        "null"
+      ]
+    }
   },
-  "additionalProperties": true
+  "additionalProperties": true,
+  "description": "How external data became a canonical record. The source is never discarded: its hash travels with the normalized record."
 }
-
