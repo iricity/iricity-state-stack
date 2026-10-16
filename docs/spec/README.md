@@ -10,4 +10,13 @@ This directory is the specification home. The JSON Schemas in `/schemas` are nor
 Reference primitives and conformance vectors: `@iricity/frontier-shared`.
 Reference registry and demo server: this repository (`npm start`, then `GET /spec`).
 
+## Implementations
+
+| Implementation | Language | Version | Vectors | Status |
+| --- | --- | --- | --- | --- |
+| `@iricity/frontier-shared` | JavaScript (Node 20+) | 0.2.0 | version 1, 23 of 23 | reference; npm publish pending the 0.1 freeze |
+| `iricity-frontier-shared` (Python) | Python 3.10+ | 0.2.0 | version 1, 23 of 23, no suite skipped | portability proof; PyPI publish pending the 0.1 freeze |
+
+Both implementations verify objects produced by the other; the vectors pin canonical form, hashes, did:key framing and the exact signing inputs. A conforming third implementation is one that prints `RESULT: conformant` against the same vectors.
+
 Specification text and schemas are licensed CC BY 4.0 (see `../SPEC-LICENSE.md`). Code is Apache-2.0.
