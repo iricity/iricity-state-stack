@@ -1,5 +1,6 @@
 import http from 'node:http';
 import { pathToFileURL } from 'node:url';
+import { registryFromEnv } from './registry/fileRegistry.js';
 import {
   CANONICAL_STATE_RECORD_TYPES,
   buildStateBridgeArtifact,
@@ -678,8 +679,8 @@ export function buildStateStackServer({ registry = createDemoRegistry() } = {}) 
   });
 }
 
-export async function startStateStackServer({ port = process.env.PORT || 8787, host = '127.0.0.1' } = {}) {
-  const server = buildStateStackServer();
+export async function startStateStackServer({ port = process.env.PORT || 8787, host = '127.0.0.1', registry } = {}) {
+  const server = buildStateStackServer(registry ? { registry } : {});
   await new Promise((resolve) => {
     server.listen(Number(port), host, resolve);
   });
@@ -689,7 +690,10 @@ export async function startStateStackServer({ port = process.env.PORT || 8787, h
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const port = Number(process.env.PORT || 8787);
   const host = process.env.HOST || '127.0.0.1';
-  startStateStackServer({ port, host }).then(() => {
-    process.stdout.write(`iricity-state-stack listening on http://${host}:${port}\n`);
+  // STATE_REGISTRY_PATH + STATE_SIGNING_PRIVATE_KEY run a durable registry; otherwise the in-memory demo.
+  const registry = registryFromEnv();
+  startStateStackServer({ port, host, registry }).then(() => {
+    const mode = registry ? `file-backed registry at ${registry.path}` : 'in-memory demo registry';
+    process.stdout.write(`iricity-state-stack listening on http://${host}:${port} (${mode})\n`);
   });
 }

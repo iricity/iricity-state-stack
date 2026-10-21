@@ -4,6 +4,7 @@ export { validateRecord, validateAgainstSchema, validateWithSchema } from './uti
 export { createReceipt, verifyReceipt, verifyChain } from './engine/receiptEngine.js';
 export { createConversionRecord } from './engine/conversionEngine.js';
 export { InMemoryStateRegistry, validateRecordSemantics } from './registry/memoryRegistry.js';
+export { FileStateRegistry, REGISTRY_LOG_VERSION, registryFromEnv } from './registry/fileRegistry.js';
 export { schemas, profileSchemas, recordTypes, getSchema, hasRecordSchema, listSchemaNames } from './schemas/recordSchemas.js';
 export {
   validateProfilePayload,

@@ -9,14 +9,14 @@
 - Applied stack integration: the space stack produces pass predictions, signed observations, node identity and authorization records against this spec.
 - Second implementation: a Python implementation of the primitives (`iricity-frontier-shared`, module `frontier_shared`) passes the same vectors (version 2, 60 of 60) and verifies objects produced by the JavaScript implementation, and the reverse.
 - Review pass: conformance vectors version 2 with 26 rejection cases; verifiers never throw; receipt ids, hashes and status are checked; registries recompute bridge summaries and bind the normalized record to the conversion record.
+- Persistence: `FileStateRegistry`, an append-only JSON-lines log with the same interface as the in-memory registry, replayed and chain-verified on start, bound to one issuer; `STATE_REGISTRY_PATH` runs the server on it.
 
 ## Next
 
 1. **Freeze 0.1.** Resolve the working name (ADR 0004), tag the vectors, publish the primitive packages (npm, PyPI) when the publication decision is made.
-2. **Persistence.** A file- or SQLite-backed registry with the same interface as the in-memory one.
-3. **Regulator-issued authorizations.** Verifiable Credential proof on the authorization record; a sample mapping from one national amateur license.
-4. **Federation sketch.** Two registries exchanging receipts and identities; conflict rules.
-5. **Domain modules.** polar, ocean, geo, lunar: each is a set of payload profiles and adapters, not new primitives.
+2. **Regulator-issued authorizations.** Verifiable Credential proof on the authorization record; a sample mapping from one national amateur license.
+3. **Federation sketch.** Two registries exchanging receipts and identities; conflict rules.
+4. **Domain modules.** polar, ocean, geo, lunar: each is a set of payload profiles and adapters, not new primitives.
 
 ## Not planned
 

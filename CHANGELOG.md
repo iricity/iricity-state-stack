@@ -1,5 +1,11 @@
 # Changelog
 
+## 0.4.0 - 2026-10-21
+
+- `FileStateRegistry`: a durable registry with the in-memory interface. Each accepted submission appends one JSON line with exactly what it added; the log is replayed on start, its header issuer must equal the configured signer, and the chain is verified before serving. Ephemeral signers are refused. A failed ingest leaves neither memory nor the log changed.
+- Server: `STATE_REGISTRY_PATH` with `STATE_SIGNING_PRIVATE_KEY` (and optional `STATE_ISSUER_NAME`) runs the durable registry; without them the in-memory demo runs as before. `startStateStackServer` accepts a registry. `GET /identity` reports the persistence mode and log path.
+- Exports `FileStateRegistry`, `registryFromEnv`, `startStateStackServer`, `buildStateStackServer`.
+
 ## 0.3.0 - 2026-10-17
 
 Review pass over the specification, schemas and reference registry.

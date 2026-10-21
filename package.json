@@ -1,6 +1,6 @@
 {
   "name": "iricity-state-stack",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "private": true,
   "type": "module",
   "description": "Frontier State Protocol specification home and reference registry: canonical records, JSON Schemas, payload profiles, signed receipts.",

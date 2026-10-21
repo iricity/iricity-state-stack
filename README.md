@@ -60,6 +60,19 @@ Endpoints:
 
 The registry signs every receipt. Without a configured signer it generates an ephemeral key at start and reports `signer_mode: "ephemeral"`; pass `new InMemoryStateRegistry({ signer })` to use durable key material.
 
+## Durable registry
+
+`FileStateRegistry` is the in-memory registry plus an append-only log on disk: one JSON line per accepted submission holding exactly the records, receipts, conversions and bridges it added, never rewritten. On start the log is replayed, the issuer in the header must equal the configured signer, and the receipt chain is verified before the registry serves anything. An ephemeral signer is refused, because a durable log needs a durable identity.
+
+```bash
+STATE_REGISTRY_PATH=data/registry.jsonl \
+STATE_SIGNING_PRIVATE_KEY="$(cat registry-key.pem)" \
+STATE_ISSUER_NAME=my-registry \
+npm start
+```
+
+Generate a key with `node -e "import('@iricity/frontier-shared').then(m => console.log(m.generateEd25519KeyPair().private_key_pem))"` and keep it outside the repository. A durable registry starts empty, with no demo seeds. Copying the log file copies the registry; `GET /identity` reports `persistence: "file"` and the log path.
+
 ## Library use
 
 The package is not published yet. Inside this workspace it is consumed from a checkout; `@iricity/frontier-shared` is vendored as a tarball under `vendor/` (see `package.json`) until the primitive package is published.
