@@ -3,6 +3,7 @@
 This directory is the specification home. The JSON Schemas in `/schemas` are normative; the prose explains them.
 
 - [protocol-v0.1.md](protocol-v0.1.md): the protocol, three core modules (identity, authorization, verification), two wire formats (envelope, receipt), payload profiles, conformance, versioning.
+- [licence-mapping-example.md](licence-mapping-example.md): how one national amateur licence becomes a regulator-issued authorization with a verifiable credential.
 - `/schemas/*.schema.json`: the twelve canonical record types plus the signed envelope.
 - `/schemas/profiles/*.schema.json`: the standard payloads the protocol wraps unchanged.
 - [../adr](../adr): the decisions behind the shape of the protocol.
@@ -14,7 +15,7 @@ Reference registry and demo server: this repository (`npm start`, then `GET /spe
 
 | Implementation | Language | Version | Vectors | Status |
 | --- | --- | --- | --- | --- |
-| `@iricity/frontier-shared` | JavaScript (Node 20+) | 0.3.0 | version 2, 60 of 60, no suite skipped | reference; npm publish pending the 0.1 freeze |
+| `@iricity/frontier-shared` | JavaScript (Node 20+) | 0.4.0 | version 2, 60 of 60, no suite skipped | reference; also implements the regulator-issued credential (section 6.2), which enters the vectors at version 3; npm publish pending the 0.1 freeze |
 | `iricity-frontier-shared` (Python) | Python 3.10+ | 0.3.0 | version 2, 60 of 60, no suite skipped | portability proof; PyPI publish pending the 0.1 freeze |
 
 Both implementations verify objects produced by the other; the vectors pin canonical form, hashes, did:key framing and the exact signing inputs. A conforming third implementation is one that prints `RESULT: conformant` against the same vectors.
