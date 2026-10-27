@@ -9,13 +9,14 @@
 - Applied stack integration: the space stack produces pass predictions, signed observations, node identity and authorization records against this spec.
 - Second implementation: a Python implementation of the primitives (`iricity-frontier-shared`, module `frontier_shared`) passes the same vectors (version 2, 60 of 60) and verifies objects produced by the JavaScript implementation, and the reverse.
 - Review pass: conformance vectors version 2 with 26 rejection cases; verifiers never throw; receipt ids, hashes and status are checked; registries recompute bridge summaries and bind the normalized record to the conversion record.
+- Regulator-issued authorizations: the `proof` field carries a W3C Verifiable Credential secured with `eddsa-jcs-2022`; registries verify and bind it on ingest; one national amateur licence mapped as an example.
 - Persistence: `FileStateRegistry`, an append-only JSON-lines log with the same interface as the in-memory registry, replayed and chain-verified on start, bound to one issuer; `STATE_REGISTRY_PATH` runs the server on it.
 
 ## Next
 
 1. **Freeze 0.1.** Resolve the working name (ADR 0004), tag the vectors, publish the primitive packages (npm, PyPI) when the publication decision is made.
-2. **Regulator-issued authorizations.** Verifiable Credential proof on the authorization record; a sample mapping from one national amateur license.
-3. **Federation sketch.** Two registries exchanging receipts and identities; conflict rules.
+2. **Federation.** The two-node demonstration in the reference node repository shows nodes verifying each other's objects through a registry; next are two registries exchanging receipts and identities, and conflict rules.
+3. **Credential vectors.** Conformance vector version 3 with credential cases, implemented in Python as well.
 4. **Domain modules.** polar, ocean, geo, lunar: each is a set of payload profiles and adapters, not new primitives.
 
 ## Not planned

@@ -45,7 +45,7 @@ What a subject may do, stated machine-readably. Shaped like a spectrum or operat
 | `valid_until` | timestamp |  |
 | `revoked` | boolean |  |
 | `license_reference` | string or null |  |
-| `proof` | string or object or null | A document hash, a verifiable credential, or null for self-declared authorizations. |
+| `proof` | string or object or null | A document hash, a verifiable credential, or null for self-declared authorizations. For `regulator_issued` records: a W3C Verifiable Credential with an `eddsa-jcs-2022` Data Integrity proof, verified and bound to the record on ingest (spec section 6.2). |
 
 ## Time (`time`)
 

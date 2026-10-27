@@ -1,5 +1,10 @@
 # Changelog
 
+## 0.5.0 - 2026-10-27
+
+- Regulator-issued authorizations: a `regulator_issued` record must carry a W3C Verifiable Credential (Data Model 2.0, `eddsa-jcs-2022` Data Integrity proof) issued by the `controller_id` DID over the record's attested fields; the registry verifies and binds it on ingest, at the record's `valid_from`. An `operator_attested` record that carries a proof is checked the same way. Specification section 6.2 defines the proof; `docs/spec/licence-mapping-example.md` maps one national amateur licence to the record.
+- Vendored `@iricity/frontier-shared` 0.4.0.
+
 ## 0.4.0 - 2026-10-21
 
 - `FileStateRegistry`: a durable registry with the in-memory interface. Each accepted submission appends one JSON line with exactly what it added; the log is replayed on start, its header issuer must equal the configured signer, and the chain is verified before serving. Ephemeral signers are refused. A failed ingest leaves neither memory nor the log changed.

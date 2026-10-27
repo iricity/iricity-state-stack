@@ -10,6 +10,7 @@ import {
   recordSubjectId,
   resolveSigner,
   verifyEnvelope,
+  verifyAuthorizationCredential,
   verifyReceiptRecord
 } from '@iricity/frontier-shared';
 
@@ -32,6 +33,15 @@ export function validateRecordSemantics(record) {
     }
     if (record.valid_from && record.valid_until && new Date(record.valid_until) < new Date(record.valid_from)) {
       errors.push('valid_until precedes valid_from');
+    }
+    // A regulator-issued authorization must carry a credential that verifies and is
+    // bound to this record; an attested one must, when it carries a proof. The
+    // credential is checked at the record's own valid_from: a registry keeps history,
+    // and whether a licence is current now is a query-time question.
+    const needsCredential = record.profile === 'regulator_issued' || (record.profile === 'operator_attested' && record.proof !== null && record.proof !== undefined);
+    if (needsCredential) {
+      const credential = verifyAuthorizationCredential(record, { at: record.valid_from ?? new Date() });
+      if (!credential.verified) errors.push(`authorization proof does not verify: ${credential.errors.join('; ')}`);
     }
   }
   if (record.record_type === 'entity' && record.identity_type && record.status) {

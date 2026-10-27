@@ -143,11 +143,13 @@ Shaped like a license so a regulator-issued credential maps onto it without loss
 | `max_eirp_dbw` | power ceiling |
 | `location` | `{latitude, longitude, altitude_m, radius_km}` |
 | `valid_from`, `valid_until`, `revoked` | validity |
-| `license_reference`, `proof` | the external license and, later, a verifiable credential |
+| `license_reference`, `proof` | the external license reference and, for `regulator_issued` records, the verifiable credential described below |
 
 Receive-only operation needs no license in most jurisdictions and is the default self-declared authorization for a new node.
 
-Rules a registry enforces on ingest, beyond the schema: a `transmit` authorization declares at least one band; every band has numeric `lower_hz < upper_hz`; `valid_until`, when present with `valid_from`, is not earlier than it. Implementations must refuse to schedule a transmit action that has no current `transmit` authorization covering the band in question.
+Rules a registry enforces on ingest, beyond the schema: a `transmit` authorization declares at least one band; every band has numeric `lower_hz < upper_hz`; `valid_until`, when present with `valid_from`, is not earlier than it; a `regulator_issued` record carries a credential that verifies and is bound to the record (below), and an `operator_attested` record that carries a proof must satisfy the same check. Implementations must refuse to schedule a transmit action that has no current `transmit` authorization covering the band in question.
+
+**Regulator-issued proof.** For `profile: regulator_issued`, `proof` is a W3C Verifiable Credential (Data Model 2.0) issued by the authority, and `controller_id` is the authority's `did:key`. The credential has `@context` starting with `https://www.w3.org/ns/credentials/v2`, `type` including `VerifiableCredential`, `issuer` equal to `controller_id`, `validFrom` and `validUntil` equal to the record's `valid_from` and `valid_until`, and a `credentialSubject` whose `id` is the record's `subject_id` and whose `capability`, `scope`, `jurisdiction`, `bands`, `max_eirp_dbw`, `location` and `license_reference` equal the record's (absent, null and an empty band list are the same). It is secured with a Data Integrity proof of type `DataIntegrityProof`, cryptosuite `eddsa-jcs-2022`, purpose `assertionMethod`, verification method `<issuer did>#<its multibase key>`, and `proofValue` a multibase base58btc Ed25519 signature over `sha256(canonical(proof options with the document's @context)) || sha256(canonical(credential without proof))`, both in the canonical form of section 3. A verifier checks all of this and the validity window at the instant of interest; a registry checks it at the record's `valid_from`, because an expired licence is still an authentic record of what was granted. Revocation is a state of the record (`revoked`), not a defect of the proof. The mapping from one national amateur licence to these fields is in [licence-mapping-example.md](licence-mapping-example.md).
 
 ### 6.3 Verification objects
 

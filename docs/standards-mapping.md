@@ -15,12 +15,13 @@ Build on, do not fork. Where an established standard defines a payload, the prot
 | SatNOGS Network API observation | RF observations | profile `satnogs.observation.json/1` |
 | STAC 1.x Item | data products | profile `stac.item.json/1` |
 | ISO 3166-1 alpha-2 | jurisdiction in authorizations | pattern-checked |
+| W3C Verifiable Credentials Data Model 2.0 | regulator-issued authorizations | the `proof` field carries a credential over the attested fields; `controller_id` is the issuer's `did:key` |
+| W3C Data Integrity, cryptosuite `eddsa-jcs-2022` | securing those credentials | JCS is the protocol's canonical form, so no JSON-LD processing is needed |
 
 ## Aligned conceptually, adopted later
 
 | Standard | Planned use |
 | --- | --- |
-| W3C Verifiable Credentials | the `proof` field of regulator-issued authorizations |
 | IETF RFC 9171 DTN Bundle Protocol | transport for data exchange between nodes with intermittent links |
 | CCSDS SLE and service management | commercial ground-station adapters |
 | XTCE | telemetry definitions when a mission-control adapter is added |

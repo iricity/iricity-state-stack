@@ -10,7 +10,7 @@ import {
   validateRecordSemantics,
   verifyReceipt
 } from '../src/index.js';
-import { buildStateBridgeArtifact, generateEd25519KeyPair, hashPayload, verifyReceiptRecord } from '@iricity/frontier-shared';
+import { buildStateBridgeArtifact, createRegulatorIssuedAuthorization, generateEd25519KeyPair, hashPayload, verifyReceiptRecord } from '@iricity/frontier-shared';
 
 const NODE = { record_type: 'entity', entity_id: 'NODE-1', entity_type: 'node', created_at: '2026-01-01T00:00:00Z' };
 
@@ -182,4 +182,43 @@ test('registry ingests bridge artifacts only when they bind together, and never 
   assert.equal(signed.bridge.summary.status, 'issued');
   assert.equal(signed.bridge.summary.receipt_issuer, signer.did);
   assert.equal(hashPayload(signedArtifact.normalized_record), signedArtifact.conversion_record.normalized_record_hash);
+});
+
+test('a regulator-issued authorization is accepted only with a credential bound to it', () => {
+  const registry = new InMemoryStateRegistry();
+  const regulator = generateEd25519KeyPair();
+  const licence = createRegulatorIssuedAuthorization({
+    subject_id: 'station_vu2abc',
+    capability: 'transmit',
+    jurisdiction: 'IN',
+    bands: [{ lower_hz: 144e6, upper_hz: 146e6, service: 'amateur' }],
+    max_eirp_dbw: 20,
+    license_reference: 'ASOC/EXAMPLE/0001',
+    valid_from: '2026-01-01T00:00:00.000Z',
+    valid_until: '2031-01-01T00:00:00.000Z',
+    regulator,
+    created: '2026-01-01T00:00:00.000Z'
+  });
+  assert.equal(validateRecord('authorization', licence).ok, true, validateRecord('authorization', licence).errors.join(', '));
+  const stored = registry.ingest(licence);
+  assert.equal(stored.record.profile, 'regulator_issued');
+  assert.equal(stored.record.controller_id, regulator.did);
+
+  assert.throws(() => registry.ingest({ ...licence, max_eirp_dbw: 40 }), /proof does not verify.*max_eirp_dbw/);
+  assert.throws(() => registry.ingest({ ...licence, proof: null }), /must carry a verifiable credential/);
+  assert.throws(() => registry.ingest({ ...licence, controller_id: generateEd25519KeyPair().did }), /not the expected/);
+  const { proof, ...noProof } = licence;
+  assert.throws(() => registry.ingest({ ...noProof, profile: 'regulator_issued' }), /must carry a verifiable credential/);
+
+  // An expired licence is still an authentic record of what was once granted.
+  const expired = createRegulatorIssuedAuthorization({
+    subject_id: 'station_old', capability: 'receive', jurisdiction: 'IN',
+    valid_from: '2020-01-01T00:00:00.000Z', valid_until: '2021-01-01T00:00:00.000Z', regulator, created: '2020-01-01T00:00:00.000Z'
+  });
+  assert.equal(registry.ingest(expired).record.valid_until, '2021-01-01T00:00:00.000Z');
+
+  // Self-declared records carry no proof and are unaffected; an attested one with a proof is checked.
+  assert.equal(registry.ingest({ record_type: 'authorization', subject_id: 's', controller_id: 'c', capability: 'receive', profile: 'self_declared' }).record.profile, 'self_declared');
+  assert.throws(() => registry.ingest({ record_type: 'authorization', subject_id: 's', controller_id: 'c', capability: 'receive', profile: 'operator_attested', proof: { bogus: true } }), /proof does not verify/);
+  assert.equal(registry.verifyChain().verified, true);
 });
