@@ -26,5 +26,5 @@ export const PROTOCOL = Object.freeze({
   },
   record_types: CANONICAL_STATE_RECORD_TYPES,
   payload_profiles: PAYLOAD_PROFILES,
-  conformance: { package: '@iricity/frontier-shared/conformance', vectors_version: '2', rule: 'every suite passes, none skipped' }
+  conformance: { package: '@iricity/frontier-shared/conformance', vectors_version: '3', rule: 'every suite passes, none skipped' }
 });

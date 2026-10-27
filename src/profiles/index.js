@@ -146,8 +146,57 @@ export function timeRecordFromPass(pass, options = {}) {
 }
 
 /** Wrap an envelope payload into a canonical record according to its payload_type. */
+/** A node's signed self-description, wrapped as its identity record. The signer must be the DID it names. */
+export function entityRecordFromNodeDescriptor(descriptor, options = {}) {
+  const shape = validateProfilePayload('node-descriptor', descriptor);
+  if (!shape.ok) throw new Error(`invalid node descriptor: ${shape.errors.join(', ')}`);
+  if (options.signer && options.signer !== descriptor.did) {
+    throw new Error(`node descriptor for ${descriptor.did} was signed by ${options.signer}`);
+  }
+  return {
+    record_type: 'entity',
+    entity_id: descriptor.node_id,
+    entity_type: 'node',
+    identity_type: 'node',
+    did: descriptor.did,
+    public_key_multibase: descriptor.did.slice('did:key:'.length),
+    controller_id: descriptor.operator,
+    display_name: descriptor.name ?? null,
+    status: 'active',
+    created_at: toIso(descriptor.generated_at, 'generated_at'),
+    discovered_at: options.timestamp ?? new Date().toISOString(),
+    payload_profile: PAYLOAD_PROFILES.NODE_DESCRIPTOR,
+    payload_hash: hashPayload(descriptor),
+    payload: descriptor
+  };
+}
+
+/** A registry's signed chain head, wrapped as a measurement by that registry. */
+export function measurementRecordFromChainHead(head, options = {}) {
+  const shape = validateProfilePayload('chain-head', head);
+  if (!shape.ok) throw new Error(`invalid chain head: ${shape.errors.join(', ')}`);
+  if (options.signer && options.signer !== head.registry_did) {
+    throw new Error(`chain head for ${head.registry_did} was signed by ${options.signer}`);
+  }
+  return {
+    record_type: 'measurement',
+    sensor_id: head.registry_did,
+    measurement_type: 'chain_head',
+    value: head,
+    unit: 'receipt',
+    timestamp: toIso(head.timestamp, 'timestamp'),
+    source: options.signer ?? head.registry_did,
+    payload_profile: PAYLOAD_PROFILES.CHAIN_HEAD,
+    payload_hash: hashPayload(head)
+  };
+}
+
 export function recordFromEnvelopePayload(payloadType, payload, options = {}) {
   switch (payloadType) {
+    case PAYLOAD_PROFILES.NODE_DESCRIPTOR:
+      return entityRecordFromNodeDescriptor(payload, options);
+    case PAYLOAD_PROFILES.CHAIN_HEAD:
+      return measurementRecordFromChainHead(payload, options);
     case PAYLOAD_PROFILES.STATE_RECORD:
       if (!payload || typeof payload !== 'object' || Array.isArray(payload) || typeof payload.record_type !== 'string') {
         throw new Error('state-record.json/1 payload must be a canonical record with record_type');

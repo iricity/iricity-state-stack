@@ -1,6 +1,7 @@
 import http from 'node:http';
 import { pathToFileURL } from 'node:url';
 import { registryFromEnv } from './registry/fileRegistry.js';
+import { anchorRegistry, buildChainHeadEnvelope, discoverNode, listAnchors, listConflicts, listNodes } from './registry/federation.js';
 import {
   CANONICAL_STATE_RECORD_TYPES,
   buildStateBridgeArtifact,
@@ -510,13 +511,52 @@ export function buildStateStackServer({ registry = createDemoRegistry() } = {}) 
             verify_envelope: 'POST /verify/envelope',
             verify_receipt: 'POST /verify/receipt',
             receipts: 'GET /demo/receipts, GET /demo/receipts/verify-chain, GET /demo/receipts/:receipt_id/verify',
-            ingest: 'POST /demo/ingest, POST /demo/ingest-envelope, POST /demo/bridge-ingest'
+            ingest: 'POST /demo/ingest, POST /demo/ingest-envelope, POST /demo/bridge-ingest',
+            chain_head: 'GET /chain/head',
+            nodes: 'GET /demo/nodes, POST /demo/nodes/discover {url}',
+            anchors: 'GET /demo/anchors, GET /demo/anchors/conflicts, POST /demo/anchors {url}'
           }
         });
       }
 
       if (method === 'GET' && path === '/identity') {
         return sendJson(res, 200, registry.identity());
+      }
+
+      if (method === 'GET' && path === '/chain/head') {
+        return sendJson(res, 200, buildChainHeadEnvelope(registry));
+      }
+
+      if (method === 'GET' && path === '/demo/nodes') {
+        return sendJson(res, 200, { nodes: listNodes(registry) });
+      }
+
+      if (method === 'POST' && path === '/demo/nodes/discover') {
+        const body = await readJsonBody(req);
+        try {
+          const discovered = await discoverNode(registry, body?.url);
+          return sendJson(res, 201, discovered);
+        } catch (error) {
+          return sendJson(res, error?.status ?? 400, { error: error?.message ?? 'discovery failed' });
+        }
+      }
+
+      if (method === 'GET' && path === '/demo/anchors') {
+        return sendJson(res, 200, { identity: registry.identity(), anchors: listAnchors(registry, url.searchParams.get('peer_did') || null) });
+      }
+
+      if (method === 'GET' && path === '/demo/anchors/conflicts') {
+        return sendJson(res, 200, { conflicts: listConflicts(registry) });
+      }
+
+      if (method === 'POST' && path === '/demo/anchors') {
+        const body = await readJsonBody(req);
+        try {
+          const anchored = await anchorRegistry(registry, body?.url);
+          return sendJson(res, 201, anchored);
+        } catch (error) {
+          return sendJson(res, error?.status ?? 400, { error: error?.message ?? 'anchoring failed', ...(error?.conflict ? { conflict: error.conflict } : {}) });
+        }
       }
 
       if (method === 'GET' && path === '/schemas') {

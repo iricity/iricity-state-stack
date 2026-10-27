@@ -1,0 +1,15 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:frontier-state-protocol:schema:v0.1:profiles/chain-head",
+  "title": "Chain head",
+  "description": "Profile chain-head.json/1. A registry's signed statement of its receipt chain head, served at /chain/head in a state-envelope/1 envelope whose signer must equal registry_did. Another registry anchors it by verifying the chain it names and receipting that fact into its own chain.",
+  "type": "object",
+  "required": ["registry_did", "head", "length", "timestamp"],
+  "properties": {
+    "registry_did": { "type": "string", "pattern": "^did:key:z6Mk[1-9A-HJ-NP-Za-km-z]+$" },
+    "issuer_name": { "type": ["string", "null"] },
+    "head": { "type": ["string", "null"], "pattern": "^sha256:[0-9a-f]{64}$" },
+    "length": { "type": "integer", "minimum": 0 },
+    "timestamp": { "type": "string", "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(\\.\\d{1,3})?Z$" }
+  }
+}

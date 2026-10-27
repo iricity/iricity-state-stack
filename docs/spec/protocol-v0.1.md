@@ -167,6 +167,8 @@ A `payload_type` names a profile. Version 0.1 defines:
 | `pass-prediction.json/1` | one predicted contact window from SGP4 propagation | `time` record with `window_kind: predicted_pass` | `payload` |
 | `state-record.json/1` | a canonical state record itself | the record | the record is the payload |
 | `opaque.json/1` | anything else | `measurement` record | `value` |
+| `node-descriptor.json/1` | a node's signed self-description (draft module, ADR 0007) | `entity` record with `identity_type: node`; the envelope signer must equal the descriptor's `did` | `payload` |
+| `chain-head.json/1` | a registry's signed chain head (draft module, ADR 0008) | `measurement` record of type `chain_head`; the envelope signer must equal `registry_did` | `value` |
 
 Every wrapping record also carries `payload_profile` (the profile id) and `payload_hash` (the hash reference of the payload as received). The payload is never rewritten; the wrapping constructor copies it and adds only the fields a registry indexes (identifiers, timestamps in the time form of section 3). A timestamp in the payload that cannot be normalised to that form is an error, never a substituted clock reading.
 
@@ -176,7 +178,7 @@ Profile schemas live in `/schemas/profiles`. They check only what the registry n
 
 ## 8. Conformance
 
-An implementation conforms when it passes every case of the current conformance vectors (version 2, 60 cases) published with the reference primitives (`@iricity/frontier-shared/conformance`, `vectors.json` with a SHA-256 lock file). The suites are:
+An implementation conforms when it passes every case of the current conformance vectors (version 3, 75 cases) published with the reference primitives (`@iricity/frontier-shared/conformance`, `vectors.json` with a SHA-256 lock file). The suites are:
 
 | Suite | Cases | Pins |
 | --- | --- | --- |
@@ -187,7 +189,8 @@ An implementation conforms when it passes every case of the current conformance 
 | `ed25519` | 2 | RFC 8032 tests 1 and 2 |
 | `envelope` | 3 | byte-exact signing inputs, hashes, ids and signatures from fixed seeds |
 | `receipt` | 4 | byte-exact receipt ids, hashes and signatures, chain links |
-| `rejections` | 26 | inputs a verifier must reject: stripped or re-encoded signatures, wrong ids, offsets in timestamps, non-ed25519 keys, status mismatches, tampered payloads |
+| `credential` | 3 | byte-exact credential ids, verification methods, proof values and hash inputs for the `eddsa-jcs-2022` proof; a regulator-issued authorization bound to its credential |
+| `rejections` | 38 | inputs a verifier must reject: stripped or re-encoded signatures, wrong ids, offsets in timestamps, non-ed25519 keys, status mismatches, tampered payloads, tampered or expired credentials, widened or re-attributed authorizations |
 
 An implementation that skips a suite is not conformant; the result is `conformant` only with zero failures and zero skipped cases. A new vector version is published whenever a rule is added; implementations state which version they pass.
 
@@ -195,11 +198,11 @@ An implementation that skips a suite is not conformant; the result is `conforman
 
 Not part of 0.1, in the order they are expected to arrive:
 
-- **Discovery** (what a node offers) and **scheduling** (booking a pass) are provided by adapters to existing networks, SatNOGS first. See ADR 0006.
+- **Discovery** (what a node offers) and **scheduling** (booking a pass) are provided by adapters to existing networks, SatNOGS first. See ADR 0006. Draft in this version: a node publishes a signed descriptor at `/.well-known/frontier-node.json` (profile `node-descriptor.json/1`) and a registry discovers it by fetching and verifying that one document (ADR 0007).
 - **Data exchange** beyond signed envelopes: DTN Bundle Protocol (RFC 9171) as transport.
 - **Compliance engine**: policy-as-code evaluation of authorizations before an action runs.
 - **Accounting**: signed, append-only, non-transferable usage records.
-- **Federation**: registries exchanging receipts and identities.
+- **Federation**: registries exchanging receipts and identities. Draft in this version: registries anchor each other's chain heads (`GET /chain/head`, profile `chain-head.json/1`); an anchor is a receipted `chain_anchor` measurement after verifying the peer's whole chain, and a peer whose chain no longer contains an anchored head at the anchored position is recorded as a `chain_conflict` and refused (ADR 0008). There is no consensus and no replication.
 
 ## 10. Versioning
 

@@ -56,9 +56,16 @@ Endpoints:
 | `POST /demo/bridge-ingest` | ingest an applied-stack bridge artifact; its receipt must verify against the conversion record and the normalized record must match the conversion hash; the summary is recomputed, never trusted |
 | `GET /demo/receipts`, `/demo/receipts/verify-chain`, `/demo/receipts/:id/verify` | the registry's append-only receipt chain |
 | `GET /demo/records`, `/demo/timeline?subject_id=`, `/demo/bridges…` | inspection |
+| `GET /chain/head` | this registry's signed chain head (`chain-head.json/1`) |
+| `POST /demo/nodes/discover {url}`, `GET /demo/nodes` | discover a node from its signed descriptor at `/.well-known/frontier-node.json`; the directory |
+| `POST /demo/anchors {url}`, `GET /demo/anchors`, `GET /demo/anchors/conflicts` | anchor a peer registry after verifying its whole chain; anchors and detected rewrites |
 | `GET /`, `/demo` | landing page with bridge summaries |
 
 The registry signs every receipt. Without a configured signer it generates an ephemeral key at start and reports `signer_mode: "ephemeral"`; pass `new InMemoryStateRegistry({ signer })` to use durable key material.
+
+## Two registries
+
+`node examples/two-registries.mjs` starts two registries with their own keys, has them anchor each other, grows one, anchors again, then restores it from a different history under the same key and shows the other registry recording the conflict and refusing to anchor. See ADR 0007 and ADR 0008.
 
 ## Durable registry
 

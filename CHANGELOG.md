@@ -1,5 +1,12 @@
 # Changelog
 
+## 0.6.0 - 2026-10-27
+
+- Discovery draft (ADR 0007): profile `node-descriptor.json/1`; `POST /demo/nodes/discover {url}` fetches a node's signed descriptor from `/.well-known/frontier-node.json`, verifies it against the DID it names, and ingests it as the node's identity record; `GET /demo/nodes` lists the directory.
+- Federation draft (ADR 0008): `GET /chain/head` publishes this registry's signed chain head (profile `chain-head.json/1`); `POST /demo/anchors {url}` verifies a peer's head and whole chain and receipts a `chain_anchor`; a peer whose chain no longer contains an anchored head at the anchored position is recorded as a `chain_conflict` (receipted) and refused with 409; `GET /demo/anchors`, `GET /demo/anchors/conflicts`. A registry does not anchor itself. `examples/two-registries.mjs` runs the whole path including a detected rewrite.
+- Conformance description points at vectors version 3 (75 cases); specification section 8 updated; section 7 and 9 describe the two draft profiles.
+- Vendored `@iricity/frontier-shared` 0.5.0.
+
 ## 0.5.0 - 2026-10-27
 
 - Regulator-issued authorizations: a `regulator_issued` record must carry a W3C Verifiable Credential (Data Model 2.0, `eddsa-jcs-2022` Data Integrity proof) issued by the `controller_id` DID over the record's attested fields; the registry verifies and binds it on ingest, at the record's `valid_from`. An `operator_attested` record that carries a proof is checked the same way. Specification section 6.2 defines the proof; `docs/spec/licence-mapping-example.md` maps one national amateur licence to the record.

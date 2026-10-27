@@ -32,6 +32,7 @@ Nothing above the primitive layer implements hashing, canonicalization or signin
 | `src/engine/conversionEngine.js` | conversion records with receipts |
 | `src/registry/memoryRegistry.js` | reference registry: validate (schema plus the semantic rules), receipt, chain, envelope ingest dispatched by `payload_type`, bridge ingest with binding checks |
 | `src/registry/fileRegistry.js` | the same registry over an append-only JSON-lines log: replayed and chain-verified on start, bound to one issuer |
+| `src/registry/federation.js` | discovery by node descriptor and anchoring between registries, with the conflict rule (ADR 0007, 0008) |
 | `src/protocol.js` | machine-readable protocol description served at `GET /spec` |
 | `src/server.js` | demo server and verification endpoints |
 

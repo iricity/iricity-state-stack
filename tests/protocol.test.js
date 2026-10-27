@@ -82,7 +82,7 @@ test('protocol description names the three core modules, the wire formats and th
   assert.deepEqual(PROTOCOL.core_modules, ['identity', 'authorization', 'verification']);
   assert.equal(PROTOCOL.wire_formats.envelope, 'state-envelope/1');
   assert.equal(PROTOCOL.wire_formats.receipt, 'state-receipt/1');
-  assert.equal(PROTOCOL.conformance.vectors_version, '2');
+  assert.equal(PROTOCOL.conformance.vectors_version, '3');
   const names = listSchemaNames();
   assert.ok(names.records.includes('authorization'));
   assert.equal(names.records.includes('envelope'), false);

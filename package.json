@@ -1,6 +1,6 @@
 {
   "name": "iricity-state-stack",
-  "version": "0.5.0",
+  "version": "0.6.0",
   "private": true,
   "type": "module",
   "description": "Frontier State Protocol specification home and reference registry: canonical records, JSON Schemas, payload profiles, signed receipts.",
@@ -14,7 +14,7 @@
     "spec": "node -e \"import('./src/index.js').then(m=>console.log(JSON.stringify(m.PROTOCOL,null,2)))\""
   },
   "dependencies": {
-    "@iricity/frontier-shared": "file:vendor/iricity-frontier-shared-0.4.0.tgz"
+    "@iricity/frontier-shared": "file:vendor/iricity-frontier-shared-0.5.0.tgz"
   },
   "license": "Apache-2.0"
 }

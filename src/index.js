@@ -13,8 +13,20 @@ export {
   entityRecordFromStacItem,
   timeRecordFromPass,
   recordFromEnvelopePayload,
+  entityRecordFromNodeDescriptor,
+  measurementRecordFromChainHead,
   toIso
 } from './profiles/index.js';
+export {
+  DESCRIPTOR_PATH,
+  CHAIN_HEAD_PATH,
+  buildChainHeadEnvelope,
+  discoverNode,
+  listNodes,
+  anchorRegistry,
+  listAnchors,
+  listConflicts
+} from './registry/federation.js';
 export { PROTOCOL } from './protocol.js';
 export {
   buildStateBridgeSummary,
