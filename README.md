@@ -82,7 +82,7 @@ Generate a key with `node -e "import('@iricity/frontier-shared').then(m => conso
 
 ## Library use
 
-The package is not published yet. Inside this workspace it is consumed from a checkout; `@iricity/frontier-shared` is vendored as a tarball under `vendor/` (see `package.json`) until the primitive package is published.
+This package is not published yet; use it from a checkout. Its dependency `@iricity/frontier-shared` is on npm.
 
 ```js
 import {
